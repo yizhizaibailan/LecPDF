@@ -1,0 +1,8 @@
+.worktrees/
+.superpowers/
+spikes/node_modules/
+spikes/out/
+spikes/dist/
+spikes/.vite/
+spikes/coverage/
+*.log
