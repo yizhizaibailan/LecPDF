@@ -1,0 +1,56 @@
+[
+  {
+    "id": "electron-44-release",
+    "product": "electron",
+    "version": "44.0.0",
+    "url": "https://releases.electronjs.org/release/v44.0.0",
+    "kind": "release",
+    "checkedAt": "2026-08-27",
+    "license": "MIT"
+  },
+  {
+    "id": "embedpdf-2-stable",
+    "product": "embedpdf",
+    "version": "2.15.0",
+    "url": "https://github.com/embedpdf/embed-pdf-viewer/releases/tag/v2.15.0",
+    "kind": "release",
+    "checkedAt": "2026-08-27",
+    "license": "Apache-2.0"
+  },
+  {
+    "id": "embedpdf-3-prerelease",
+    "product": "embedpdf-next",
+    "version": "3.0.0-next.8",
+    "url": "https://github.com/embedpdf/embed-pdf-viewer/releases/tag/v3.0.0-next.8",
+    "kind": "release",
+    "checkedAt": "2026-08-27",
+    "license": "Apache-2.0"
+  },
+  {
+    "id": "epubjs-package",
+    "product": "epubjs",
+    "version": "0.3.93",
+    "url": "https://github.com/futurepress/epub.js/blob/master/package.json",
+    "kind": "repository",
+    "checkedAt": "2026-08-27",
+    "license": "BSD-2-Clause"
+  },
+  {
+    "id": "electron-vite-5",
+    "product": "electron-vite",
+    "version": "5.0.0",
+    "url": "https://github.com/alex8088/electron-vite/releases/tag/v5.0.0",
+    "kind": "release",
+    "checkedAt": "2026-08-27",
+    "license": "MIT"
+  },
+  {
+    "id": "react-18",
+    "product": "react",
+    "version": "18.3.1",
+    "url": "https://github.com/facebook/react/releases/tag/v18.3.1",
+    "kind": "release",
+    "checkedAt": "2026-08-27",
+    "license": "MIT"
+  }
+]
