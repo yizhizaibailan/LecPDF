@@ -1,0 +1,34 @@
+{
+  "name": "lecpdf",
+  "version": "0.1.0",
+  "description": "本地优先的 PDF 与 EPUB 阅读器",
+  "private": true,
+  "type": "module",
+  "main": "./out/main/index.js",
+  "packageManager": "pnpm@10.17.1",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --build"
+  },
+  "dependencies": {
+    "@ant-design/icons": "5.6.1",
+    "antd": "5.27.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "5.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "5.0.4",
+    "electron": "44.0.0",
+    "electron-vite": "5.0.0",
+    "typescript": "5.9.2",
+    "vite": "7.2.4",
+    "vitest": "4.1.10"
+  }
+}

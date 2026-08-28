@@ -1,4 +1,15 @@
 .worktrees/
+node_modules/
+out/
+*.tsbuildinfo
+/electron.vite.config.js
+/electron.vite.config.d.ts
+/vitest.config.js
+/vitest.config.d.ts
+/src/main/**/*.js
+/src/main/**/*.d.ts
+/src/preload/**/*.js
+/src/preload/**/*.d.ts
 .superpowers/
 spikes/node_modules/
 spikes/out/
