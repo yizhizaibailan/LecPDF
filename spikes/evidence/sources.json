@@ -52,5 +52,23 @@
     "kind": "release",
     "checkedAt": "2026-08-27",
     "license": "MIT"
+  },
+  {
+    "id": "electron-esm-preload-docs",
+    "product": "electron",
+    "version": "44.0.0",
+    "url": "https://www.electronjs.org/docs/latest/tutorial/esm",
+    "kind": "docs",
+    "checkedAt": "2026-08-28",
+    "license": "MIT"
+  },
+  {
+    "id": "electron-sandbox-docs",
+    "product": "electron",
+    "version": "44.0.0",
+    "url": "https://www.electronjs.org/docs/latest/tutorial/sandbox",
+    "kind": "docs",
+    "checkedAt": "2026-08-28",
+    "license": "MIT"
   }
 ]
