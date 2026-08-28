@@ -1,0 +1,23 @@
+{
+  "labId": "baseline-manual",
+  "verdict": "原生支持",
+  "checks": [
+    {
+      "id": "remote-http-blocked",
+      "passed": true,
+      "detail": "https://example.com/lecpdf-offline-gate -> net::ERR_BLOCKED_BY_CLIENT"
+    },
+    {
+      "id": "sandbox-preload-available",
+      "passed": true,
+      "detail": "window.lecSpike.saveResult invoked through Electron 44 CDP"
+    }
+  ],
+  "evidence": [
+    "electron@44.0.0",
+    "https://www.electronjs.org/docs/latest/tutorial/sandbox"
+  ],
+  "commercialDecision": {
+    "status": "not-needed"
+  }
+}

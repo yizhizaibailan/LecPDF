@@ -9,7 +9,8 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "test": "vitest run",
-    "fixtures": "node fixtures/generate.mjs"
+    "fixtures": "node fixtures/generate.mjs",
+    "verify:offline": "node scripts/cdp-offline-check.mjs"
   },
   "dependencies": {
     "react": "18.3.1",

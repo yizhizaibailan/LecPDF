@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2000-01-01T00:00:00.000Z",
+  "generator": "fixtures/generate.mjs",
+  "files": [
+    {
+      "path": "text.pdf",
+      "type": "pdf",
+      "pages": 3,
+      "content": [
+        "text"
+      ],
+      "sha256": "c47d7d2cccd830d5e508ccc4f409243af8dc03605d94deccfe49408772614c33",
+      "license": "CC0-1.0"
+    },
+    {
+      "path": "scanned.pdf",
+      "type": "pdf",
+      "pages": 3,
+      "content": [
+        "raster-image"
+      ],
+      "sha256": "c420c6c2e1f87bae3040b8c423998ad88818f25a4d3efd1ea53ac746b645bc6c",
+      "license": "CC0-1.0"
+    },
+    {
+      "path": "mixed.pdf",
+      "type": "pdf",
+      "pages": 3,
+      "content": [
+        "text",
+        "vector",
+        "raster-image"
+      ],
+      "sha256": "f97c4ac16778fe7ac2826bb63e6fd3b3ebea62a96fcdf87e8f22d7f949dbe8f2",
+      "license": "CC0-1.0"
+    },
+    {
+      "path": "reflow.epub",
+      "type": "epub",
+      "chapters": 3,
+      "content": [
+        "zh-CN",
+        "en-US",
+        "inline-boundaries"
+      ],
+      "sha256": "e55b554f1ae1692963414550f3ca3f50a25d7af5b3583243a28782ba9c285d7d",
+      "license": "CC0-1.0"
+    }
+  ],
+  "knownSelections": [
+    {
+      "id": "zh-inline-boundary",
+      "fixture": "reflow.epub",
+      "chapter": "OEBPS/chapter-1.xhtml",
+      "language": "zh-CN",
+      "exact": "包含跨标签选区以及后续文字",
+      "prefix": "这是用于稳定恢复的中文句子，",
+      "suffix": "。"
+    },
+    {
+      "id": "zh-repeat-second",
+      "fixture": "reflow.epub",
+      "chapter": "OEBPS/chapter-1.xhtml",
+      "language": "zh-CN",
+      "exact": "重复短语",
+      "prefix": "前缀乙 ",
+      "suffix": " 后缀乙。"
+    },
+    {
+      "id": "en-inline-boundary",
+      "fixture": "reflow.epub",
+      "chapter": "OEBPS/chapter-2.xhtml",
+      "language": "en-US",
+      "exact": "a strong boundary selection",
+      "prefix": "This sentence crosses ",
+      "suffix": " and continues afterward."
+    },
+    {
+      "id": "en-repeat-second",
+      "fixture": "reflow.epub",
+      "chapter": "OEBPS/chapter-2.xhtml",
+      "language": "en-US",
+      "exact": "repeated phrase",
+      "prefix": "Prefix two ",
+      "suffix": " suffix two."
+    }
+  ],
+  "imageRectangles": [
+    {
+      "fixture": "scanned.pdf",
+      "page": 1,
+      "x": 36,
+      "y": 36,
+      "width": 540,
+      "height": 720,
+      "coordinateSystem": "pdf-points-bottom-left"
+    },
+    {
+      "fixture": "mixed.pdf",
+      "page": 1,
+      "x": 72,
+      "y": 250,
+      "width": 240,
+      "height": 180,
+      "coordinateSystem": "pdf-points-bottom-left"
+    }
+  ],
+  "textRegions": [
+    {
+      "fixture": "text.pdf",
+      "page": 1,
+      "exact": "Stable text anchor: alpha beta gamma delta.",
+      "x": 72,
+      "y": 670
+    },
+    {
+      "fixture": "mixed.pdf",
+      "page": 1,
+      "exact": "Text layer remains selectable while raster artwork stays photographic.",
+      "x": 72,
+      "y": 660
+    }
+  ]
+}
