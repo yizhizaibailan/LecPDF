@@ -13,6 +13,19 @@
     "verify:offline": "node scripts/cdp-offline-check.mjs"
   },
   "dependencies": {
+    "@embedpdf/core": "2.15.0",
+    "@embedpdf/engines": "2.15.0",
+    "@embedpdf/models": "2.15.0",
+    "@embedpdf/pdfium": "2.15.0",
+    "@embedpdf/plugin-annotation": "2.15.0",
+    "@embedpdf/plugin-document-manager": "2.15.0",
+    "@embedpdf/plugin-export": "2.15.0",
+    "@embedpdf/plugin-history": "2.15.0",
+    "@embedpdf/plugin-interaction-manager": "2.15.0",
+    "@embedpdf/plugin-rotate": "2.15.0",
+    "@embedpdf/plugin-selection": "2.15.0",
+    "@embedpdf/plugin-zoom": "2.15.0",
+    "@embedpdf/react-pdf-viewer": "2.15.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
