@@ -72,9 +72,9 @@
 ### LEC-002 antd 主题 token 与设计规范落地 · AFK
 **What to build**：ConfigProvider 主题 token（附录 A.6：`colorPrimary #1677ff`、`colorBgLayout #e8edf4`、`colorText #1e293b`、`colorBorder #e2e8f0`、`borderRadius 8`）；iconify `solar:` 图标集接入；设计规范附录 A 作为 UI 开发基准文档引用。
 **Acceptance criteria**
-- [ ] 主题 token 全应用生效，与附录 A 色板一致
-- [ ] solar 图标可按名引用渲染
-- [ ] 提供一个空态页面验证背景/文字/边框三色
+- [x] 主题 token 全应用生效，与附录 A 色板一致
+- [x] solar 图标可按名引用渲染
+- [x] 提供一个空态页面验证背景/文字/边框三色
 **Blocked by**：LEC-001
 
 ### LEC-003 shared 磁盘 schema 类型 · AFK

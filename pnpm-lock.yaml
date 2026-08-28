@@ -11,6 +11,12 @@ importers:
       '@ant-design/icons':
         specifier: 5.6.1
         version: 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@iconify-icons/solar':
+        specifier: 2.0.1
+        version: 2.0.1
+      '@iconify/react':
+        specifier: 6.0.2
+        version: 6.0.2(react@18.3.1)
       antd:
         specifier: 5.27.0
         version: 5.27.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -350,6 +356,17 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@iconify-icons/solar@2.0.1':
+    resolution: {integrity: sha512-qNGYTS9atZJAPxsD0tlctgWrouL+LUYzRKzaJ+l0Y4AmnqmqALb/bM+WrVv7RVjj9sjp8fVx1XmpGsZlN8tfXw==}
+
+  '@iconify/react@6.0.2':
+    resolution: {integrity: sha512-SMmC2sactfpJD427WJEDN6PMyznTFMhByK9yLW0gOTtnjzzbsi/Ke/XqsumsavFPwNiXs8jSiYeZTmLCLwO+Fg==}
+    peerDependencies:
+      react: '>=16'
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1519,6 +1536,17 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.12':
     optional: true
+
+  '@iconify-icons/solar@2.0.1':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify/react@6.0.2(react@18.3.1)':
+    dependencies:
+      '@iconify/types': 2.0.0
+      react: 18.3.1
+
+  '@iconify/types@2.0.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

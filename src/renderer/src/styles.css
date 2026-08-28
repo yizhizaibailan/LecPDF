@@ -29,14 +29,16 @@ body {
   box-shadow: 0 16px 36px rgb(15 23 42 / 16%);
 }
 
-.project-shell__card h1 {
-  margin: 16px 0 8px;
-  font-size: 28px;
+.project-shell__icon {
+  color: #1677ff;
 }
 
-.project-shell__card p {
-  margin: 0;
-  color: #64748b;
+.project-shell__description .ant-typography {
+  margin-bottom: 8px;
+}
+
+.project-shell__description .ant-typography:last-child {
+  margin-bottom: 0;
 }
 
 .project-shell__tag {
