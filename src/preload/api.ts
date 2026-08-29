@@ -1,4 +1,5 @@
 import {
+  LIFECYCLE_IPC_CHANNELS,
   WINDOW_IPC_CHANNELS,
   type BackupResult,
   type FileIndexEntry,
@@ -9,10 +10,12 @@ import {
   type UpdateCheckResult
 } from '../../shared/ipc'
 
+export type IpcRendererListener = (event: unknown, ...args: unknown[]) => void
+
 export type IpcRendererPort = {
   invoke(channel: string): Promise<unknown>
-  on(channel: string, listener: (event: unknown, maximized: boolean) => void): unknown
-  removeListener(channel: string, listener: (event: unknown, maximized: boolean) => void): unknown
+  on(channel: string, listener: IpcRendererListener): unknown
+  removeListener(channel: string, listener: IpcRendererListener): unknown
 }
 
 function unavailable<T>(method: string): () => Promise<T> {
@@ -48,10 +51,48 @@ function createWindowApi(ipcRenderer?: IpcRendererPort): LecApi['window'] {
       await ipcRenderer.invoke(WINDOW_IPC_CHANNELS.close)
     },
     onMaximizedChange: (listener) => {
-      const listenerWrapper = (_event: unknown, maximized: boolean) => listener(maximized)
+      const listenerWrapper: IpcRendererListener = (_event, maximized) => {
+        if (typeof maximized === 'boolean') {
+          listener(maximized)
+        }
+      }
       ipcRenderer.on(WINDOW_IPC_CHANNELS.maximizedChange, listenerWrapper)
       return () => ipcRenderer.removeListener(WINDOW_IPC_CHANNELS.maximizedChange, listenerWrapper)
     }
+  })
+}
+
+function createLifecycleApi(ipcRenderer?: IpcRendererPort): LecApi['lifecycle'] {
+  if (ipcRenderer === undefined) {
+    return Object.freeze({
+      onOpenFileRequest: unavailableSubscription('lifecycle.onOpenFileRequest'),
+      openLogsFolder: unavailable<void>('lifecycle.openLogsFolder')
+    })
+  }
+
+  const listeners = new Set<(path: string) => void>()
+  const pendingPaths: string[] = []
+  const receiveFileRequest: IpcRendererListener = (_event, path) => {
+    if (typeof path !== 'string') {
+      return
+    }
+
+    if (listeners.size === 0) {
+      pendingPaths.push(path)
+      return
+    }
+
+    listeners.forEach((listener) => listener(path))
+  }
+  ipcRenderer.on(LIFECYCLE_IPC_CHANNELS.openFileRequest, receiveFileRequest)
+
+  return Object.freeze({
+    onOpenFileRequest: (listener) => {
+      listeners.add(listener)
+      pendingPaths.splice(0).forEach((path) => listener(path))
+      return () => listeners.delete(listener)
+    },
+    openLogsFolder: unavailable<void>('lifecycle.openLogsFolder')
   })
 }
 
@@ -92,9 +133,6 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
     update: Object.freeze({
       checkForUpdates: unavailable<UpdateCheckResult>('update.checkForUpdates')
     }),
-    lifecycle: Object.freeze({
-      onOpenFileRequest: unavailableSubscription('lifecycle.onOpenFileRequest'),
-      openLogsFolder: unavailable<void>('lifecycle.openLogsFolder')
-    })
+    lifecycle: createLifecycleApi(ipcRenderer)
   })
 }

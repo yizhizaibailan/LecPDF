@@ -133,8 +133,8 @@
 ### LEC-009 SingleInstance 单实例与文件路由 · AFK
 **What to build**：单实例锁；二次启动捕获命令行文件路径 → `lifecycle.onOpenFileRequest` 下发；首启时延迟到窗口就绪再下发。
 **Acceptance criteria**
-- [ ] 双开时第二个实例退出且文件在首个窗口路由成功
-- [ ] 首启带文件参数打开正确
+- [x] 双开时第二个实例退出且文件在首个窗口路由成功
+- [x] 首启带文件参数打开正确
 **Blocked by**：LEC-007
 
 ### LEC-010 ProtocolSvc lec-file:// 流式读取 · AFK

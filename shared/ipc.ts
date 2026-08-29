@@ -22,6 +22,10 @@ export const WINDOW_IPC_CHANNELS = {
   maximizedChange: 'lec:window:maximized-change'
 } as const
 
+export const LIFECYCLE_IPC_CHANNELS = {
+  openFileRequest: 'lec:lifecycle:open-file-request'
+} as const
+
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
 

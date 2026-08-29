@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { WINDOW_IPC_CHANNELS } from '../../shared/ipc'
+import { LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../../shared/ipc'
 import { createPreloadApi, type IpcRendererPort } from './api'
 
 test('exposes a frozen, fail-closed IPC placeholder API', async () => {
@@ -16,18 +16,19 @@ test('exposes a frozen, fail-closed IPC placeholder API', async () => {
 
 test('forwards window controls and removes the maximize subscription when requested', async () => {
   const invokedChannels: string[] = []
-  const listeners = new Map<string, Set<(event: unknown, maximized: boolean) => void>>()
+  type Listener = (event: unknown, ...args: unknown[]) => void
+  const listeners = new Map<string, Set<Listener>>()
   const ipcRenderer: IpcRendererPort = {
     invoke: async (channel) => {
       invokedChannels.push(channel)
     },
     on: (channel, listener) => {
       const channelListeners = listeners.get(channel) ?? new Set()
-      channelListeners.add(listener)
+      channelListeners.add(listener as unknown as Listener)
       listeners.set(channel, channelListeners)
     },
     removeListener: (channel, listener) => {
-      listeners.get(channel)?.delete(listener)
+      listeners.get(channel)?.delete(listener as unknown as Listener)
     }
   }
   const api = createPreloadApi('0.1.0', ipcRenderer)
@@ -47,4 +48,30 @@ test('forwards window controls and removes the maximize subscription when reques
     WINDOW_IPC_CHANNELS.close
   ])
   expect(observedStates).toEqual([true])
+})
+
+test('buffers early file-open requests until the renderer subscribes and supports unsubscription', () => {
+  type Listener = (event: unknown, ...args: unknown[]) => void
+  const listeners = new Map<string, Set<Listener>>()
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async () => undefined,
+    on: (channel, listener) => {
+      const channelListeners = listeners.get(channel) ?? new Set()
+      channelListeners.add(listener as unknown as Listener)
+      listeners.set(channel, channelListeners)
+    },
+    removeListener: (channel, listener) => {
+      listeners.get(channel)?.delete(listener as unknown as Listener)
+    }
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+  const received: string[] = []
+
+  listeners.get(LIFECYCLE_IPC_CHANNELS.openFileRequest)?.forEach((listener) => listener({}, 'C:\\books\\initial.pdf'))
+  const unsubscribe = api.lifecycle.onOpenFileRequest((path) => received.push(path))
+  listeners.get(LIFECYCLE_IPC_CHANNELS.openFileRequest)?.forEach((listener) => listener({}, 'C:\\books\\later.epub'))
+  unsubscribe()
+  listeners.get(LIFECYCLE_IPC_CHANNELS.openFileRequest)?.forEach((listener) => listener({}, 'C:\\books\\ignored.pdf'))
+
+  expect(received).toEqual(['C:\\books\\initial.pdf', 'C:\\books\\later.epub'])
 })
