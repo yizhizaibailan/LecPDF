@@ -1,0 +1,40 @@
+{
+  "labId": "pdf-annotations-print",
+  "verdict": "应用层扩展",
+  "checks": [
+    {
+      "id": "seven-type-sidecar-roundtrip",
+      "passed": true,
+      "detail": "七类批注通过统一 sidecar 模型往返；实验测试已覆盖。"
+    },
+    {
+      "id": "appearance-stream-structure-inspector",
+      "passed": true,
+      "detail": "检查器可识别缺失 /AP appearance stream，避免将屏幕可见误判为可打印。"
+    },
+    {
+      "id": "print-composer-page-geometry",
+      "passed": true,
+      "detail": "合成输出保留源 PDF 的页数与页面尺寸。"
+    },
+    {
+      "id": "print-composer-seven-type-sample",
+      "passed": true,
+      "detail": "pdf-annotations-print-composer.pdf 包含七类批注的独立合成打印样本，并已通过默认 PDF 查看器人工复核。"
+    },
+    {
+      "id": "native-save-as-copy",
+      "passed": false,
+      "detail": "未取得原生写回后的 appearance stream 通过证据；正式打印不采用此路线。"
+    }
+  ],
+  "evidence": [
+    "@embedpdf/react-pdf-viewer@2.15.0",
+    "@embedpdf/plugin-annotation@2.15.0",
+    "results/pdf-annotations-print-composer.pdf",
+    "独立默认 PDF 查看器人工复核"
+  ],
+  "commercialDecision": {
+    "status": "not-needed"
+  }
+}
