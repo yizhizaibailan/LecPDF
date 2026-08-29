@@ -154,8 +154,8 @@ function createBackupApi(ipcRenderer?: IpcRendererPort): LecApi['backup'] {
       }
       return result
     },
-    exportData: unavailable<BackupResult | null>('backup.exportData'),
-    importData: unavailable<ImportResult>('backup.importData')
+    exportData: async () => ipcRenderer.invoke(BACKUP_IPC_CHANNELS.exportData) as Promise<BackupResult | null>,
+    importData: async (sourcePath, configMode) => ipcRenderer.invoke(BACKUP_IPC_CHANNELS.importData, sourcePath, configMode) as Promise<ImportResult>
   })
 }
 

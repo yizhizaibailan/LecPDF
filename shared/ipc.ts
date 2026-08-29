@@ -35,7 +35,9 @@ export const LIBRARY_IPC_CHANNELS = {
 } as const
 
 export const BACKUP_IPC_CHANNELS = {
-  runBackup: 'lec:backup:run'
+  runBackup: 'lec:backup:run',
+  exportData: 'lec:backup:export',
+  importData: 'lec:backup:import'
 } as const
 
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
@@ -62,6 +64,8 @@ export type ImportResult = {
   importedPaths: string[]
   missingPaths: string[]
 }
+
+export type ConfigImportMode = 'overwrite' | 'skip'
 
 export type UpdateCheckResult = {
   available: boolean
@@ -106,7 +110,7 @@ export interface LecApi {
   readonly backup: Readonly<{
     runBackup(): Promise<BackupResult>
     exportData(): Promise<BackupResult | null>
-    importData(sourcePath: string): Promise<ImportResult>
+    importData(sourcePath: string, configMode?: ConfigImportMode): Promise<ImportResult>
   }>
   readonly update: Readonly<{
     checkForUpdates(): Promise<UpdateCheckResult>

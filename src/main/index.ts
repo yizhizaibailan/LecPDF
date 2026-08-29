@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain, protocol, screen } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
 import { extname } from 'node:path'
 import { registerBackupIpcHandlers, type BackupIpcMainPort } from './backup-ipc'
 import { BackupScheduler } from './backup-scheduler'
-import { BackupService } from './backup-service'
+import { BackupService, type BackupSaveDialog } from './backup-service'
 import { ConfigStore } from './config-store'
 import { CrashMarker } from './crash-marker'
 import { bindCrashMarkerCleanExit, type CrashMarkerLifecycleApp } from './crash-marker-lifecycle'
@@ -87,7 +87,7 @@ if (isPrimaryInstance) {
   app.whenReady().then(async () => {
     const dataStore = new DataStore(app.getPath('userData'))
     const configStore = new ConfigStore(dataStore)
-    const backupService = new BackupService(dataStore)
+    const backupService = new BackupService(dataStore, undefined, dialog as unknown as BackupSaveDialog)
     backupScheduler = new BackupScheduler(backupService)
     backupScheduler.configure((await configStore.load()).general.autoBackup)
     app.on('before-quit', () => backupScheduler?.stop())

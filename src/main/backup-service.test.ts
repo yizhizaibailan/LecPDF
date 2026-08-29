@@ -1,4 +1,5 @@
-import { mkdtemp, readdir, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as yauzl from 'yauzl'
@@ -57,6 +58,55 @@ test('removes the oldest backups after a successful write and keeps the configur
     'backup-11.zip',
     'backup-12.zip'
   ])
+})
+
+test('exports to the user-selected ZIP path and leaves no file when the selection is cancelled', async () => {
+  const dataStore = await createDataStore()
+  await dataStore.writeJson('library.json', { version: 1, files: {} })
+  const selectedPath = join(dataStore.rootPath, 'chosen', 'LecPDF-export.zip')
+  const service = new BackupService(dataStore, () => 123, {
+    showSaveDialog: async () => ({ canceled: false, filePath: selectedPath })
+  })
+  const cancelledService = new BackupService(dataStore, () => 456, {
+    showSaveDialog: async () => ({ canceled: true })
+  })
+
+  await expect(service.exportData()).resolves.toMatchObject({ path: selectedPath })
+  await expect(listZipEntries(selectedPath)).resolves.toContain('library.json')
+  await expect(cancelledService.exportData()).resolves.toBeNull()
+})
+
+test('imports only documents still on disk, remaps sidecars by path, and can skip imported config', async () => {
+  const sourceStore = await createDataStore()
+  const destinationStore = await createDataStore()
+  const availablePath = join(destinationStore.rootPath, 'books', 'available.pdf')
+  const missingPath = join(destinationStore.rootPath, 'books', 'missing.pdf')
+  await mkdir(join(destinationStore.rootPath, 'books'), { recursive: true })
+  await writeFile(availablePath, 'pdf')
+  await sourceStore.writeJson('config.json', { version: 1, language: 'en-US' })
+  await sourceStore.writeJson('library.json', {
+    version: 1,
+    recent: [{ path: availablePath }, { path: missingPath }],
+    starred: [availablePath, missingPath],
+    folders: [],
+    files: { [availablePath]: { name: 'available.pdf' }, [missingPath]: { name: 'missing.pdf' } }
+  })
+  await sourceStore.writeJson('data/original-name.json', { version: 1, path: availablePath })
+  await sourceStore.writeJson('data/missing-name.json', { version: 1, path: missingPath })
+  const sourceBackup = await new BackupService(sourceStore, () => 123).runBackup()
+  await destinationStore.writeJson('config.json', { version: 1, language: 'zh-CN' })
+  const service = new BackupService(destinationStore)
+
+  const result = await service.importData(sourceBackup.path, 'skip')
+
+  expect(result).toEqual({ importedPaths: [availablePath], missingPaths: [missingPath] })
+  await expect(destinationStore.readJson('config.json')).resolves.toEqual({ version: 1, language: 'zh-CN' })
+  await expect(destinationStore.readJson(`data/${createHash('md5').update(availablePath).digest('hex').slice(0, 16)}.json`)).resolves.toEqual({ version: 1, path: availablePath })
+  await expect(destinationStore.readJson('library.json')).resolves.toMatchObject({
+    recent: [{ path: availablePath }],
+    starred: [availablePath],
+    files: { [availablePath]: { name: 'available.pdf' } }
+  })
 })
 
 function listZipEntries(path: string): Promise<string[]> {
