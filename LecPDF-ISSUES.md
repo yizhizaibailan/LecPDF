@@ -125,9 +125,9 @@
 ### LEC-008 窗口几何记忆 · AFK
 **What to build**：关闭时保存 bounds/maximized 到 config；启动还原；越界（显示器拔出）回退主屏中央。
 **Acceptance criteria**
-- [ ] 重启后位置/尺寸/最大化状态还原
-- [ ] 人为写入越界坐标后启动回退到可见区域
-- [ ] 单测覆盖越界回退
+- [x] 重启后位置/尺寸/最大化状态还原
+- [x] 人为写入越界坐标后启动回退到可见区域
+- [x] 单测覆盖越界回退
 **Blocked by**：LEC-007、LEC-005
 
 ### LEC-009 SingleInstance 单实例与文件路由 · AFK

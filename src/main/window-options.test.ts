@@ -18,3 +18,14 @@ test('creates a frameless reader window with isolated renderer privileges', () =
     }
   })
 })
+
+test('uses restored geometry when it is available', () => {
+  const options = createMainWindowOptions('C:/LecPDF/out/preload/index.cjs', {
+    x: 40,
+    y: 60,
+    width: 1400,
+    height: 900
+  })
+
+  expect(options).toMatchObject({ x: 40, y: 60, width: 1400, height: 900 })
+})
