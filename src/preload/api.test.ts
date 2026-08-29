@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { FILE_READ_IPC_CHANNELS, LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../../shared/ipc'
+import { FILE_READ_IPC_CHANNELS, LIBRARY_IPC_CHANNELS, LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../../shared/ipc'
 import { createPreloadApi, type IpcRendererPort } from './api'
 
 test('exposes a frozen, fail-closed IPC placeholder API', async () => {
@@ -89,4 +89,19 @@ test('returns a registered PDF URL through the exposed file-read API', async () 
   const api = createPreloadApi('0.1.0', ipcRenderer)
 
   await expect(api.fileRead.getPdfUrl('C:\\books\\reader.pdf')).resolves.toBe('lec-file://document/token-6')
+})
+
+test('forwards folder scans through the exposed library API', async () => {
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async (channel, paths) => {
+      expect(channel).toBe(LIBRARY_IPC_CHANNELS.scanFolders)
+      expect(paths).toEqual(['C:\\books'])
+      return [{ path: 'C:\\books\\reader.pdf', kind: 'pdf' }]
+    },
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+
+  await expect(api.library.scanFolders(['C:\\books'])).resolves.toEqual([{ path: 'C:\\books\\reader.pdf', kind: 'pdf' }])
 })

@@ -5,6 +5,8 @@ import { ConfigStore } from './config-store'
 import { DataStore } from './dataStore'
 import { FileOpenRouter, getSupportedDocumentPaths, type FileRouteWindow } from './file-open-router'
 import { registerFileReadIpcHandlers, type FileReadIpcMainPort } from './file-read-ipc'
+import { registerLibraryIpcHandlers, type LibraryIpcMainPort } from './library-ipc'
+import { LibraryService } from './library-service'
 import { LecFileProtocol, registerLecFileProtocol, type LecFileProtocolPort } from './lec-file-protocol'
 import { setupSingleInstance, type SingleInstanceApp } from './single-instance'
 import { createMainWindow } from './window'
@@ -18,6 +20,7 @@ let activeMainWindow: BrowserWindow | null = null
 const windowManager = new WindowManager(() => activeMainWindow as ManagedWindow | null)
 const fileOpenRouter = new FileOpenRouter()
 const lecFileProtocol = new LecFileProtocol()
+const libraryService = new LibraryService()
 
 function routeOpenFiles(paths: string[]): void {
   paths.filter((path) => extname(path).toLowerCase() === '.pdf').forEach((path) => lecFileProtocol.registerPdf(path))
@@ -64,6 +67,7 @@ if (isPrimaryInstance) {
     const configStore = new ConfigStore(new DataStore(app.getPath('userData')))
     registerLecFileProtocol(protocol as unknown as LecFileProtocolPort, lecFileProtocol)
     registerFileReadIpcHandlers(ipcMain as unknown as FileReadIpcMainPort, lecFileProtocol)
+    registerLibraryIpcHandlers(ipcMain as unknown as LibraryIpcMainPort, libraryService)
     registerWindowIpcHandlers(ipcMain, windowManager)
     await openMainWindow(configStore)
 

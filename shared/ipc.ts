@@ -30,6 +30,10 @@ export const FILE_READ_IPC_CHANNELS = {
   getPdfUrl: 'lec:file-read:get-pdf-url'
 } as const
 
+export const LIBRARY_IPC_CHANNELS = {
+  scanFolders: 'lec:library:scan-folders'
+} as const
+
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
 

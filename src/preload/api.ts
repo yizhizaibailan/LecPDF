@@ -1,5 +1,6 @@
 import {
   FILE_READ_IPC_CHANNELS,
+  LIBRARY_IPC_CHANNELS,
   LIFECYCLE_IPC_CHANNELS,
   WINDOW_IPC_CHANNELS,
   type BackupResult,
@@ -117,6 +118,24 @@ function createFileReadApi(ipcRenderer?: IpcRendererPort): LecApi['fileRead'] {
   })
 }
 
+function createLibraryApi(ipcRenderer?: IpcRendererPort): LecApi['library'] {
+  if (ipcRenderer === undefined) {
+    return Object.freeze({
+      scanFolders: unavailable<FileIndexEntry[]>('library.scanFolders')
+    })
+  }
+
+  return Object.freeze({
+    scanFolders: async (paths: string[]) => {
+      const entries = await ipcRenderer.invoke(LIBRARY_IPC_CHANNELS.scanFolders, paths)
+      if (!Array.isArray(entries)) {
+        throw new Error('主进程未返回有效目录扫描结果')
+      }
+      return entries as FileIndexEntry[]
+    }
+  })
+}
+
 export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort): LecApi {
   return Object.freeze({
     app: Object.freeze({ version }),
@@ -132,9 +151,7 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
       getCacheSize: unavailable<number>('fs.getCacheSize'),
       clearCache: unavailable<void>('fs.clearCache')
     }),
-    library: Object.freeze({
-      scanFolders: unavailable<FileIndexEntry[]>('library.scanFolders')
-    }),
+    library: createLibraryApi(ipcRenderer),
     fileRead: createFileReadApi(ipcRenderer),
     data: Object.freeze({
       readJson: async <T extends PersistedDocument>() => {

@@ -148,8 +148,8 @@
 ### LEC-011 LibrarySvc 目录扫描 · AFK
 **What to build**：`scanFolders(paths[])` → `FileIndexEntry[]`（readdir+stat，仅 .pdf/.epub，不解析内容）。
 **Acceptance criteria**
-- [ ] 混合目录扫描返回正确元数据（名称/大小/mtime/kind）
-- [ ] 子目录递归；大目录不阻塞主进程
+- [x] 混合目录扫描返回正确元数据（名称/大小/mtime/kind）
+- [x] 子目录递归；大目录不阻塞主进程
 **Blocked by**：LEC-004
 
 ### LEC-012 CrashMarker 崩溃标记 · AFK
