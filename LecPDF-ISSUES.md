@@ -80,9 +80,9 @@
 ### LEC-003 shared 磁盘 schema 类型 · AFK
 **What to build**：`shared/` 落地五个磁盘结构类型——`Config`（settings 5 组 + shortcuts + window）、`Library`（recent/starred/folders/files）、`Sidecar`（`UnifiedAnnotation` 七类判别联合 + bookmarks + progress + epubSettings + tts）、`RuntimeMark`、`BackupManifest`，全部带 `version` 字段。
 **Acceptance criteria**
-- [ ] 类型与 ARCH §6.1–6.5 JSON 示例一一对应
-- [ ] 七类批注判别联合（文本标记 quad / note point / freeText rect / ink paths）
-- [ ] tsc 干净；导出被 T0.3/后续任务直接复用
+- [x] 类型与 ARCH §6.1–6.5 JSON 示例一一对应
+- [x] 七类批注判别联合（文本标记 quad / note point / freeText rect / ink paths）
+- [x] tsc 干净；导出被 T0.3/后续任务直接复用
 **Blocked by**：LEC-001
 
 ### LEC-004 IPC 契约与 window.lec 声明 · AFK
