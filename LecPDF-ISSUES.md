@@ -117,9 +117,9 @@
 ### LEC-007 WindowManager frameless 窗口与三键 · AFK
 **What to build**：frameless 窗口创建；`window.minimize/maximize/close` + `onMaximizedChange` IPC；标题栏拖拽区。
 **Acceptance criteria**
-- [ ] 窗口三键可用且状态同步（最大化图标切换）
-- [ ] 拖拽标题栏可移动窗口
-- [ ] 双击标题栏切换最大化
+- [x] 窗口三键可用且状态同步（最大化图标切换）
+- [x] 拖拽标题栏可移动窗口
+- [x] 双击标题栏切换最大化
 **Blocked by**：LEC-004
 
 ### LEC-008 窗口几何记忆 · AFK

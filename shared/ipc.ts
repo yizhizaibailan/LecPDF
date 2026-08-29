@@ -14,6 +14,14 @@ export const IPC_API_GROUPS = [
 
 export type IpcApiGroup = (typeof IPC_API_GROUPS)[number]
 export type Unsubscribe = () => void
+
+export const WINDOW_IPC_CHANNELS = {
+  minimize: 'lec:window:minimize',
+  toggleMaximize: 'lec:window:toggle-maximize',
+  close: 'lec:window:close',
+  maximizedChange: 'lec:window:maximized-change'
+} as const
+
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
 

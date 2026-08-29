@@ -12,9 +12,51 @@ body {
   margin: 0;
 }
 
+.app-frame {
+  min-height: 100vh;
+}
+
+.window-titlebar {
+  display: flex;
+  height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 16px;
+  color: #334155;
+  background: rgb(255 255 255 / 88%);
+  border-bottom: 1px solid #dce3ec;
+  font-size: 13px;
+  font-weight: 700;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.window-titlebar__controls {
+  display: flex;
+  align-self: stretch;
+  -webkit-app-region: no-drag;
+}
+
+.window-titlebar__controls button {
+  width: 46px;
+  color: #475569;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.window-titlebar__controls button:hover {
+  background: #e7edf5;
+}
+
+.window-titlebar__controls .window-titlebar__close:hover {
+  color: #fff;
+  background: #dc2626;
+}
+
 .project-shell {
   display: grid;
-  min-height: 100vh;
+  min-height: calc(100vh - 40px);
   place-items: center;
   background: radial-gradient(circle at 50% -20%, #f8fbff 0%, #e9eff7 42%, #dfe7f2 100%);
 }

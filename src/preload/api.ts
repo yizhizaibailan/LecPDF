@@ -1,4 +1,19 @@
-import type { BackupResult, FileIndexEntry, FileStat, ImportResult, LecApi, PersistedDocument, UpdateCheckResult } from '../../shared/ipc'
+import {
+  WINDOW_IPC_CHANNELS,
+  type BackupResult,
+  type FileIndexEntry,
+  type FileStat,
+  type ImportResult,
+  type LecApi,
+  type PersistedDocument,
+  type UpdateCheckResult
+} from '../../shared/ipc'
+
+export type IpcRendererPort = {
+  invoke(channel: string): Promise<unknown>
+  on(channel: string, listener: (event: unknown, maximized: boolean) => void): unknown
+  removeListener(channel: string, listener: (event: unknown, maximized: boolean) => void): unknown
+}
 
 function unavailable<T>(method: string): () => Promise<T> {
   return async () => {
@@ -12,15 +27,38 @@ function unavailableSubscription(method: string): () => never {
   }
 }
 
-export function createPreloadApi(version: string): LecApi {
-  return Object.freeze({
-    app: Object.freeze({ version }),
-    window: Object.freeze({
+function createWindowApi(ipcRenderer?: IpcRendererPort): LecApi['window'] {
+  if (ipcRenderer === undefined) {
+    return Object.freeze({
       minimize: unavailable<void>('window.minimize'),
       toggleMaximize: unavailable<void>('window.toggleMaximize'),
       close: unavailable<void>('window.close'),
       onMaximizedChange: unavailableSubscription('window.onMaximizedChange')
-    }),
+    })
+  }
+
+  return Object.freeze({
+    minimize: async () => {
+      await ipcRenderer.invoke(WINDOW_IPC_CHANNELS.minimize)
+    },
+    toggleMaximize: async () => {
+      await ipcRenderer.invoke(WINDOW_IPC_CHANNELS.toggleMaximize)
+    },
+    close: async () => {
+      await ipcRenderer.invoke(WINDOW_IPC_CHANNELS.close)
+    },
+    onMaximizedChange: (listener) => {
+      const listenerWrapper = (_event: unknown, maximized: boolean) => listener(maximized)
+      ipcRenderer.on(WINDOW_IPC_CHANNELS.maximizedChange, listenerWrapper)
+      return () => ipcRenderer.removeListener(WINDOW_IPC_CHANNELS.maximizedChange, listenerWrapper)
+    }
+  })
+}
+
+export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort): LecApi {
+  return Object.freeze({
+    app: Object.freeze({ version }),
+    window: createWindowApi(ipcRenderer),
     dialogs: Object.freeze({
       openDocuments: unavailable<string[]>('dialogs.openDocuments'),
       openFolder: unavailable<string | null>('dialogs.openFolder'),
