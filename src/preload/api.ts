@@ -3,6 +3,7 @@ import {
   FILE_READ_IPC_CHANNELS,
   LIBRARY_IPC_CHANNELS,
   LIFECYCLE_IPC_CHANNELS,
+  UPDATE_IPC_CHANNELS,
   WINDOW_IPC_CHANNELS,
   type BackupResult,
   type FileIndexEntry,
@@ -186,7 +187,7 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
     }),
     backup: createBackupApi(ipcRenderer),
     update: Object.freeze({
-      checkForUpdates: unavailable<UpdateCheckResult>('update.checkForUpdates')
+      checkForUpdates: async () => ipcRenderer === undefined ? unavailable<UpdateCheckResult>('update.checkForUpdates')() : ipcRenderer.invoke(UPDATE_IPC_CHANNELS.checkForUpdates) as Promise<UpdateCheckResult>
     }),
     lifecycle: createLifecycleApi(ipcRenderer)
   })

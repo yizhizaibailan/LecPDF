@@ -40,6 +40,8 @@ export const BACKUP_IPC_CHANNELS = {
   importData: 'lec:backup:import'
 } as const
 
+export const UPDATE_IPC_CHANNELS = { checkForUpdates: 'lec:update:check' } as const
+
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
 

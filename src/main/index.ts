@@ -1,6 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
 import { extname } from 'node:path'
+import log from 'electron-log/main'
+import { autoUpdater } from 'electron-updater'
 import { registerBackupIpcHandlers, type BackupIpcMainPort } from './backup-ipc'
 import { BackupScheduler } from './backup-scheduler'
 import { BackupService, type BackupSaveDialog } from './backup-service'
@@ -18,6 +20,8 @@ import { createMainWindow } from './window'
 import { bindWindowGeometryPersistence, restoreWindowGeometry, type GeometryWindow } from './window-geometry'
 import { WindowManager, type ManagedWindow } from './window-manager'
 import { registerWindowIpcHandlers } from './window-ipc'
+import { registerUpdateIpcHandlers } from './update-ipc'
+import { UpdateService } from './update-service'
 
 const rendererUrl = process.env.ELECTRON_RENDERER_URL ?? 'http://localhost:5173'
 const preloadPath = join(__dirname, '../preload/index.cjs')
@@ -86,6 +90,11 @@ if (isPrimaryInstance) {
 
   app.whenReady().then(async () => {
     const dataStore = new DataStore(app.getPath('userData'))
+    log.transports.file.resolvePathFn = () => join(dataStore.rootPath, 'logs', 'main.log')
+    log.transports.remote.level = false
+    log.info('LecPDF 主进程启动')
+    process.on('uncaughtException', (error) => log.error('未捕获异常', error))
+    process.on('unhandledRejection', (error) => log.error('未处理拒绝', error))
     const configStore = new ConfigStore(dataStore)
     const backupService = new BackupService(dataStore, undefined, dialog as unknown as BackupSaveDialog)
     backupScheduler = new BackupScheduler(backupService)
@@ -98,6 +107,7 @@ if (isPrimaryInstance) {
     registerFileReadIpcHandlers(ipcMain as unknown as FileReadIpcMainPort, lecFileProtocol)
     registerLibraryIpcHandlers(ipcMain as unknown as LibraryIpcMainPort, libraryService)
     registerBackupIpcHandlers(ipcMain as unknown as BackupIpcMainPort, backupService)
+    registerUpdateIpcHandlers(ipcMain, new UpdateService(app.getVersion(), autoUpdater))
     registerWindowIpcHandlers(ipcMain, windowManager)
     await openMainWindow(configStore)
 
