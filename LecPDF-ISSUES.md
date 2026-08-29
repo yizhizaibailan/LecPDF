@@ -96,10 +96,10 @@
 ### LEC-005 DataStoreSvc 原子读写 · AFK
 **What to build**：主进程 `dataStore.ts`：userData 路径解析、`readJson/writeJson`（临时文件+rename、读写互斥、失败清理）。
 **Acceptance criteria**
-- [ ] 并发写不产生半截文件
-- [ ] 写失败后临时文件被清理
-- [ ] 损坏 JSON 读取返回明确错误而非崩溃
-- [ ] vitest 覆盖原子写/损坏/互斥用例
+- [x] 并发写不产生半截文件
+- [x] 写失败后临时文件被清理
+- [x] 损坏 JSON 读取返回明确错误而非崩溃
+- [x] vitest 覆盖原子写/损坏/互斥用例
 **Blocked by**：LEC-004
 
 ### LEC-006 schema 迁移框架 · AFK
