@@ -88,9 +88,9 @@
 ### LEC-004 IPC 契约与 window.lec 声明 · AFK
 **What to build**：`shared/ipc.ts` 定义 window/dialogs/fs/library/fileRead/data/backup/update/lifecycle 全量接口；渲染侧 `env.d.ts` 声明 `window.lec`；preload 骨架暴露占位实现。
 **Acceptance criteria**
-- [ ] 接口面与 ARCH §3 IPC 表一致
-- [ ] 渲染层可经类型安全方式调用全部通道
-- [ ] tsc 干净
+- [x] 接口面与 ARCH §3 IPC 表一致
+- [x] 渲染层可经类型安全方式调用全部通道
+- [x] tsc 干净
 **Blocked by**：LEC-003
 
 ### LEC-005 DataStoreSvc 原子读写 · AFK

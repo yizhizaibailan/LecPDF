@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"]
+  "include": ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx", "shared/schema.ts", "shared/ipc.ts"]
 }

@@ -1,7 +1,9 @@
-interface Window {
-  lec?: {
-    app: {
-      version: string
-    }
+import type { LecApi } from '../../../shared/ipc'
+
+declare global {
+  interface Window {
+    lec: LecApi
   }
 }
+
+export {}

@@ -5,7 +5,7 @@ import { App } from './App'
 import './styles.css'
 import { lecTheme } from './theme'
 
-const version = window.lec?.app.version ?? '开发模式'
+const version = window.lec.app.version
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
