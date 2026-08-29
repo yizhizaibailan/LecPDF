@@ -26,6 +26,10 @@ export const LIFECYCLE_IPC_CHANNELS = {
   openFileRequest: 'lec:lifecycle:open-file-request'
 } as const
 
+export const FILE_READ_IPC_CHANNELS = {
+  getPdfUrl: 'lec:file-read:get-pdf-url'
+} as const
+
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
 
@@ -85,6 +89,7 @@ export interface LecApi {
   }>
   readonly fileRead: Readonly<{
     readBuffer(path: string): Promise<ArrayBuffer>
+    getPdfUrl(path: string): Promise<string>
   }>
   readonly data: Readonly<{
     readJson<T extends PersistedDocument>(path: PersistedDocumentPath): Promise<T | null>

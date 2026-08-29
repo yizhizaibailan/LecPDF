@@ -140,9 +140,9 @@
 ### LEC-010 ProtocolSvc lec-file:// 流式读取 · AFK
 **What to build**：注册 `lec-file://` 协议，按 Range 流式读取本地 PDF；路径校验防止任意文件读取。
 **Acceptance criteria**
-- [ ] 200MB 测试 PDF 流式读取正常，支持 Range 请求
-- [ ] 非法路径被拒绝
-- [ ] 渲染层可直接以 URL 打开
+- [x] 200MB 测试 PDF 流式读取正常，支持 Range 请求
+- [x] 非法路径被拒绝
+- [x] 渲染层可直接以 URL 打开
 **Blocked by**：LEC-004
 
 ### LEC-011 LibrarySvc 目录扫描 · AFK

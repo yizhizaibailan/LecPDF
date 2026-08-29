@@ -1,8 +1,11 @@
-import { app, BrowserWindow, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
+import { extname } from 'node:path'
 import { ConfigStore } from './config-store'
 import { DataStore } from './dataStore'
 import { FileOpenRouter, getSupportedDocumentPaths, type FileRouteWindow } from './file-open-router'
+import { registerFileReadIpcHandlers, type FileReadIpcMainPort } from './file-read-ipc'
+import { LecFileProtocol, registerLecFileProtocol, type LecFileProtocolPort } from './lec-file-protocol'
 import { setupSingleInstance, type SingleInstanceApp } from './single-instance'
 import { createMainWindow } from './window'
 import { bindWindowGeometryPersistence, restoreWindowGeometry, type GeometryWindow } from './window-geometry'
@@ -14,8 +17,11 @@ const preloadPath = join(__dirname, '../preload/index.cjs')
 let activeMainWindow: BrowserWindow | null = null
 const windowManager = new WindowManager(() => activeMainWindow as ManagedWindow | null)
 const fileOpenRouter = new FileOpenRouter()
+const lecFileProtocol = new LecFileProtocol()
 
 function routeOpenFiles(paths: string[]): void {
+  paths.filter((path) => extname(path).toLowerCase() === '.pdf').forEach((path) => lecFileProtocol.registerPdf(path))
+
   if (activeMainWindow === null) {
     fileOpenRouter.enqueue(paths)
     return
@@ -56,6 +62,8 @@ if (isPrimaryInstance) {
 
   app.whenReady().then(async () => {
     const configStore = new ConfigStore(new DataStore(app.getPath('userData')))
+    registerLecFileProtocol(protocol as unknown as LecFileProtocolPort, lecFileProtocol)
+    registerFileReadIpcHandlers(ipcMain as unknown as FileReadIpcMainPort, lecFileProtocol)
     registerWindowIpcHandlers(ipcMain, windowManager)
     await openMainWindow(configStore)
 

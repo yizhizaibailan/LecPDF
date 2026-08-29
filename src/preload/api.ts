@@ -1,4 +1,5 @@
 import {
+  FILE_READ_IPC_CHANNELS,
   LIFECYCLE_IPC_CHANNELS,
   WINDOW_IPC_CHANNELS,
   type BackupResult,
@@ -13,7 +14,7 @@ import {
 export type IpcRendererListener = (event: unknown, ...args: unknown[]) => void
 
 export type IpcRendererPort = {
-  invoke(channel: string): Promise<unknown>
+  invoke(channel: string, ...arguments_: unknown[]): Promise<unknown>
   on(channel: string, listener: IpcRendererListener): unknown
   removeListener(channel: string, listener: IpcRendererListener): unknown
 }
@@ -96,6 +97,26 @@ function createLifecycleApi(ipcRenderer?: IpcRendererPort): LecApi['lifecycle'] 
   })
 }
 
+function createFileReadApi(ipcRenderer?: IpcRendererPort): LecApi['fileRead'] {
+  if (ipcRenderer === undefined) {
+    return Object.freeze({
+      readBuffer: unavailable<ArrayBuffer>('fileRead.readBuffer'),
+      getPdfUrl: unavailable<string>('fileRead.getPdfUrl')
+    })
+  }
+
+  return Object.freeze({
+    readBuffer: unavailable<ArrayBuffer>('fileRead.readBuffer'),
+    getPdfUrl: async (path: string) => {
+      const url = await ipcRenderer.invoke(FILE_READ_IPC_CHANNELS.getPdfUrl, path)
+      if (typeof url !== 'string') {
+        throw new Error('主进程未返回有效 PDF URL')
+      }
+      return url
+    }
+  })
+}
+
 export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort): LecApi {
   return Object.freeze({
     app: Object.freeze({ version }),
@@ -114,9 +135,7 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
     library: Object.freeze({
       scanFolders: unavailable<FileIndexEntry[]>('library.scanFolders')
     }),
-    fileRead: Object.freeze({
-      readBuffer: unavailable<ArrayBuffer>('fileRead.readBuffer')
-    }),
+    fileRead: createFileReadApi(ipcRenderer),
     data: Object.freeze({
       readJson: async <T extends PersistedDocument>() => {
         throw new Error('尚未实现：data.readJson')
