@@ -34,6 +34,10 @@ export const LIBRARY_IPC_CHANNELS = {
   scanFolders: 'lec:library:scan-folders'
 } as const
 
+export const BACKUP_IPC_CHANNELS = {
+  runBackup: 'lec:backup:run'
+} as const
+
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
 

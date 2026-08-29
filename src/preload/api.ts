@@ -1,4 +1,5 @@
 import {
+  BACKUP_IPC_CHANNELS,
   FILE_READ_IPC_CHANNELS,
   LIBRARY_IPC_CHANNELS,
   LIFECYCLE_IPC_CHANNELS,
@@ -136,6 +137,28 @@ function createLibraryApi(ipcRenderer?: IpcRendererPort): LecApi['library'] {
   })
 }
 
+function createBackupApi(ipcRenderer?: IpcRendererPort): LecApi['backup'] {
+  if (ipcRenderer === undefined) {
+    return Object.freeze({
+      runBackup: unavailable<BackupResult>('backup.runBackup'),
+      exportData: unavailable<BackupResult | null>('backup.exportData'),
+      importData: unavailable<ImportResult>('backup.importData')
+    })
+  }
+
+  return Object.freeze({
+    runBackup: async () => {
+      const result = await ipcRenderer.invoke(BACKUP_IPC_CHANNELS.runBackup)
+      if (!isBackupResult(result)) {
+        throw new Error('主进程未返回有效备份结果')
+      }
+      return result
+    },
+    exportData: unavailable<BackupResult | null>('backup.exportData'),
+    importData: unavailable<ImportResult>('backup.importData')
+  })
+}
+
 export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort): LecApi {
   return Object.freeze({
     app: Object.freeze({ version }),
@@ -161,14 +184,26 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
         throw new Error('尚未实现：data.writeJson')
       }
     }),
-    backup: Object.freeze({
-      runBackup: unavailable<BackupResult>('backup.runBackup'),
-      exportData: unavailable<BackupResult | null>('backup.exportData'),
-      importData: unavailable<ImportResult>('backup.importData')
-    }),
+    backup: createBackupApi(ipcRenderer),
     update: Object.freeze({
       checkForUpdates: unavailable<UpdateCheckResult>('update.checkForUpdates')
     }),
     lifecycle: createLifecycleApi(ipcRenderer)
   })
+}
+
+function isBackupResult(value: unknown): value is BackupResult {
+  return typeof value === 'object'
+    && value !== null
+    && 'path' in value
+    && typeof value.path === 'string'
+    && 'manifest' in value
+    && typeof value.manifest === 'object'
+    && value.manifest !== null
+    && 'app' in value.manifest
+    && value.manifest.app === 'LecPDF'
+    && 'version' in value.manifest
+    && typeof value.manifest.version === 'number'
+    && 'exportedAt' in value.manifest
+    && typeof value.manifest.exportedAt === 'number'
 }

@@ -1,6 +1,9 @@
 import { app, BrowserWindow, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
 import { extname } from 'node:path'
+import { registerBackupIpcHandlers, type BackupIpcMainPort } from './backup-ipc'
+import { BackupScheduler } from './backup-scheduler'
+import { BackupService } from './backup-service'
 import { ConfigStore } from './config-store'
 import { CrashMarker } from './crash-marker'
 import { bindCrashMarkerCleanExit, type CrashMarkerLifecycleApp } from './crash-marker-lifecycle'
@@ -25,6 +28,7 @@ const lecFileProtocol = new LecFileProtocol()
 const libraryService = new LibraryService()
 const openedTabPaths: string[] = []
 let crashMarker: CrashMarker | null = null
+let backupScheduler: BackupScheduler | null = null
 
 function routeOpenFiles(paths: string[]): void {
   recordOpenedTabPaths(paths)
@@ -83,12 +87,17 @@ if (isPrimaryInstance) {
   app.whenReady().then(async () => {
     const dataStore = new DataStore(app.getPath('userData'))
     const configStore = new ConfigStore(dataStore)
+    const backupService = new BackupService(dataStore)
+    backupScheduler = new BackupScheduler(backupService)
+    backupScheduler.configure((await configStore.load()).general.autoBackup)
+    app.on('before-quit', () => backupScheduler?.stop())
     crashMarker = new CrashMarker(dataStore)
     await crashMarker.start(openedTabPaths)
     bindCrashMarkerCleanExit(app as unknown as CrashMarkerLifecycleApp, crashMarker)
     registerLecFileProtocol(protocol as unknown as LecFileProtocolPort, lecFileProtocol)
     registerFileReadIpcHandlers(ipcMain as unknown as FileReadIpcMainPort, lecFileProtocol)
     registerLibraryIpcHandlers(ipcMain as unknown as LibraryIpcMainPort, libraryService)
+    registerBackupIpcHandlers(ipcMain as unknown as BackupIpcMainPort, backupService)
     registerWindowIpcHandlers(ipcMain, windowManager)
     await openMainWindow(configStore)
 

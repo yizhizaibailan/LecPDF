@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { FILE_READ_IPC_CHANNELS, LIBRARY_IPC_CHANNELS, LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../../shared/ipc'
+import { BACKUP_IPC_CHANNELS, FILE_READ_IPC_CHANNELS, LIBRARY_IPC_CHANNELS, LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../../shared/ipc'
 import { createPreloadApi, type IpcRendererPort } from './api'
 
 test('exposes a frozen, fail-closed IPC placeholder API', async () => {
@@ -104,4 +104,24 @@ test('forwards folder scans through the exposed library API', async () => {
   const api = createPreloadApi('0.1.0', ipcRenderer)
 
   await expect(api.library.scanFolders(['C:\\books'])).resolves.toEqual([{ path: 'C:\\books\\reader.pdf', kind: 'pdf' }])
+})
+
+test('forwards a manual backup request through the exposed backup API', async () => {
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async (channel) => {
+      expect(channel).toBe(BACKUP_IPC_CHANNELS.runBackup)
+      return {
+        path: 'C:\\AppData\\LecPDF\\backups\\backup-123.zip',
+        manifest: { app: 'LecPDF', version: 1, exportedAt: 123 }
+      }
+    },
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+
+  await expect(api.backup.runBackup()).resolves.toEqual({
+    path: 'C:\\AppData\\LecPDF\\backups\\backup-123.zip',
+    manifest: { app: 'LecPDF', version: 1, exportedAt: 123 }
+  })
 })
