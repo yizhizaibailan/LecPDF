@@ -7,6 +7,7 @@ import {
   RotatePlugin,
   ScrollPlugin,
   ScrollStrategy,
+  SearchPlugin,
   SpreadMode,
   SpreadPlugin,
   ThumbnailPlugin,
@@ -14,6 +15,7 @@ import {
   ZoomPlugin,
   type PluginRegistry
 } from '@embedpdf/react-pdf-viewer'
+import { MatchFlag } from '@embedpdf/models'
 import { SolarIcon } from './SolarIcon'
 
 type AppProps = {
@@ -152,6 +154,83 @@ export function ReaderToolbar({ registry }: { registry: PluginRegistry | null })
         <button type="button" aria-label="顺时针旋转 90 度" disabled={disabled} onClick={() => getRotation()?.rotateForward()}>向右旋转</button>
       </div>
     </nav>
+  )
+}
+
+export function ReaderSearchBar({ registry, onClose = () => undefined }: { registry: PluginRegistry | null; onClose?: () => void }): JSX.Element {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const [query, setQuery] = useState('')
+  const [total, setTotal] = useState(0)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const [caseSensitive, setCaseSensitive] = useState(false)
+  const [searching, setSearching] = useState(false)
+
+  const getSearch = () => registry?.getPlugin<SearchPlugin>(SearchPlugin.id)?.provides() ?? null
+
+  useEffect(() => {
+    inputRef.current?.focus()
+    const search = getSearch()
+    if (search === null) return
+
+    const unsubscribeResult = search.onSearchResult(({ results }) => {
+      setTotal(results.total)
+      setActiveIndex(results.total > 0 ? 0 : -1)
+      setSearching(false)
+    })
+    const unsubscribeActive = search.onActiveResultChange(({ index }) => setActiveIndex(index))
+    return () => { unsubscribeResult(); unsubscribeActive() }
+  }, [registry])
+
+  const runSearch = (nextCaseSensitive = caseSensitive): void => {
+    const keyword = query.trim()
+    const search = getSearch()
+    if (search === null) return
+    if (keyword.length === 0) {
+      search.stopSearch()
+      setTotal(0)
+      setActiveIndex(-1)
+      return
+    }
+
+    search.startSearch()
+    search.setFlags(nextCaseSensitive ? [MatchFlag.MatchCase] : [])
+    setSearching(true)
+    void search.searchAllPages(keyword).toPromise()
+      .then(({ total: nextTotal }) => {
+        setTotal(nextTotal)
+        setActiveIndex(nextTotal > 0 ? 0 : -1)
+      })
+      .catch(() => { setTotal(0); setActiveIndex(-1) })
+      .finally(() => setSearching(false))
+  }
+
+  const close = (): void => {
+    getSearch()?.stopSearch()
+    onClose()
+  }
+
+  const disabled = registry === null
+  const matchLabel = searching ? '搜索中…' : total === 0 ? '无匹配' : `${activeIndex + 1} / ${total}`
+
+  return (
+    <form className="reader-search" aria-label="PDF 文档内搜索" onSubmit={(event) => { event.preventDefault(); runSearch() }}>
+      <input ref={inputRef} aria-label="搜索 PDF 内容" placeholder="在文档中搜索" value={query} disabled={disabled} onChange={(event) => setQuery(event.target.value)} />
+      <span className="reader-search__count" aria-live="polite">{matchLabel}</span>
+      <button type="button" aria-label="上一个搜索结果" disabled={disabled || total === 0} onClick={() => setActiveIndex(getSearch()?.previousResult() ?? -1)}>上一个</button>
+      <button type="button" aria-label="下一个搜索结果" disabled={disabled || total === 0} onClick={() => setActiveIndex(getSearch()?.nextResult() ?? -1)}>下一个</button>
+      <label className="reader-search__case">
+        <input
+          aria-label="大小写敏感"
+          type="checkbox"
+          checked={caseSensitive}
+          disabled={disabled}
+          onChange={(event) => { const nextCaseSensitive = event.target.checked; setCaseSensitive(nextCaseSensitive); runSearch(nextCaseSensitive) }}
+        />
+        区分大小写
+      </label>
+      <button type="submit" disabled={disabled}>搜索</button>
+      <button type="button" aria-label="关闭 PDF 搜索" onClick={close}>关闭</button>
+    </form>
   )
 }
 
@@ -315,6 +394,7 @@ export function App({ version }: AppProps): JSX.Element {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [openError, setOpenError] = useState<string | null>(null)
   const [registry, setRegistry] = useState<PluginRegistry | null>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => window.lec.lifecycle.onOpenFileRequest((path) => {
     if (!path.toLowerCase().endsWith('.pdf')) return
@@ -322,6 +402,17 @@ export function App({ version }: AppProps): JSX.Element {
       .then((url) => { setOpenError(null); setRegistry(null); setPdfUrl(url) })
       .catch(() => setOpenError('无法打开此 PDF 文件'))
   }), [])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.ctrlKey && event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   if (pdfUrl !== null) {
     return (
@@ -331,17 +422,21 @@ export function App({ version }: AppProps): JSX.Element {
           <ReaderToolbar registry={registry} />
           <div className="reader-workspace">
             <ReaderSidebar registry={registry} />
-            <PDFViewer
-              config={{
-                src: pdfUrl,
-                zoom: { defaultZoomLevel: ZoomMode.FitPage, minZoom: 0.1, maxZoom: 4 },
-                scroll: { defaultStrategy: ScrollStrategy.Vertical, defaultPageGap: 16 },
-                spread: { defaultSpreadMode: SpreadMode.None },
-                thumbnails: { width: 120, gap: 8, buffer: 3, labelHeight: 16, autoScroll: true }
-              }}
-              style={{ height: '100%' }}
-              onReady={setRegistry}
-            />
+            <section className="reader-viewport" aria-label="PDF 阅读视图">
+              {searchOpen && <ReaderSearchBar registry={registry} onClose={() => setSearchOpen(false)} />}
+              <PDFViewer
+                config={{
+                  src: pdfUrl,
+                  zoom: { defaultZoomLevel: ZoomMode.FitPage, minZoom: 0.1, maxZoom: 4 },
+                  scroll: { defaultStrategy: ScrollStrategy.Vertical, defaultPageGap: 16 },
+                  spread: { defaultSpreadMode: SpreadMode.None },
+                  thumbnails: { width: 120, gap: 8, buffer: 3, labelHeight: 16, autoScroll: true },
+                  search: { showAllResults: true }
+                }}
+                style={{ height: '100%' }}
+                onReady={setRegistry}
+              />
+            </section>
           </div>
         </main>
       </div>

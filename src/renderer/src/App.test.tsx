@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { App, ReaderSidebar, ReaderToolbar } from './App'
+import { App, ReaderSearchBar, ReaderSidebar, ReaderToolbar } from './App'
 
 test('renders an empty state with a named solar icon', () => {
   const html = renderToStaticMarkup(<App version="0.1.0" />)
@@ -37,4 +37,14 @@ test('renders PDF outline and thumbnail tabs', () => {
   expect(html).toContain('aria-label="打开 PDF 缩略图"')
   expect(html).toContain('aria-label="打开 PDF 目录"')
   expect(html).toContain('PDF 没有可用目录')
+})
+
+test('renders PDF search controls', () => {
+  const html = renderToStaticMarkup(<ReaderSearchBar registry={null} />)
+
+  expect(html).toContain('aria-label="搜索 PDF 内容"')
+  expect(html).toContain('aria-label="上一个搜索结果"')
+  expect(html).toContain('aria-label="下一个搜索结果"')
+  expect(html).toContain('aria-label="大小写敏感"')
+  expect(html).toContain('aria-label="关闭 PDF 搜索"')
 })
