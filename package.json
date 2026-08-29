@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "5.6.1",
+    "@embedpdf/react-pdf-viewer": "2.15.0",
     "@iconify-icons/solar": "2.0.1",
     "@iconify/react": "6.0.2",
     "antd": "5.27.0",

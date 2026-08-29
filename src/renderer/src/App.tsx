@@ -1,6 +1,7 @@
 import { BorderOutlined, CloseOutlined, MinusOutlined, ShrinkOutlined } from '@ant-design/icons'
 import { Empty, Typography } from 'antd'
 import { useEffect, useState } from 'react'
+import { PDFViewer } from '@embedpdf/react-pdf-viewer'
 import { SolarIcon } from './SolarIcon'
 
 type AppProps = {
@@ -44,6 +45,20 @@ function WindowTitlebar(): JSX.Element {
 }
 
 export function App({ version }: AppProps): JSX.Element {
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [openError, setOpenError] = useState<string | null>(null)
+
+  useEffect(() => window.lec.lifecycle.onOpenFileRequest((path) => {
+    if (!path.toLowerCase().endsWith('.pdf')) return
+    void window.lec.fileRead.getPdfUrl(path)
+      .then((url) => { setOpenError(null); setPdfUrl(url) })
+      .catch(() => setOpenError('无法打开此 PDF 文件'))
+  }), [])
+
+  if (pdfUrl !== null) {
+    return <div className="app-frame"><WindowTitlebar /><PDFViewer config={{ src: pdfUrl }} style={{ height: 'calc(100vh - 56px)' }} /></div>
+  }
+
   return (
     <div className="app-frame">
       <WindowTitlebar />
@@ -59,6 +74,7 @@ export function App({ version }: AppProps): JSX.Element {
               </div>
             }
           />
+          {openError !== null && <Typography.Text type="danger">{openError}</Typography.Text>}
         </section>
       </main>
     </div>
