@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { App, ReaderToolbar } from './App'
+import { App, ReaderSidebar, ReaderToolbar } from './App'
 
 test('renders an empty state with a named solar icon', () => {
   const html = renderToStaticMarkup(<App version="0.1.0" />)
@@ -29,4 +29,12 @@ test('renders accessible PDF reading controls', () => {
   expect(html).toContain('aria-label="逆时针旋转 90 度"')
   expect(html).toContain('aria-label="顺时针旋转 90 度"')
   expect(html).toContain('aria-label="跳转到页码"')
+})
+
+test('renders PDF outline and thumbnail tabs', () => {
+  const html = renderToStaticMarkup(<ReaderSidebar registry={null} />)
+
+  expect(html).toContain('aria-label="打开 PDF 缩略图"')
+  expect(html).toContain('aria-label="打开 PDF 目录"')
+  expect(html).toContain('PDF 没有可用目录')
 })
