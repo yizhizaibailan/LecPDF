@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
 import { extname } from 'node:path'
 import { ConfigStore } from './config-store'
+import { CrashMarker } from './crash-marker'
+import { bindCrashMarkerCleanExit, type CrashMarkerLifecycleApp } from './crash-marker-lifecycle'
 import { DataStore } from './dataStore'
 import { FileOpenRouter, getSupportedDocumentPaths, type FileRouteWindow } from './file-open-router'
 import { registerFileReadIpcHandlers, type FileReadIpcMainPort } from './file-read-ipc'
@@ -21,8 +23,11 @@ const windowManager = new WindowManager(() => activeMainWindow as ManagedWindow 
 const fileOpenRouter = new FileOpenRouter()
 const lecFileProtocol = new LecFileProtocol()
 const libraryService = new LibraryService()
+const openedTabPaths: string[] = []
+let crashMarker: CrashMarker | null = null
 
 function routeOpenFiles(paths: string[]): void {
+  recordOpenedTabPaths(paths)
   paths.filter((path) => extname(path).toLowerCase() === '.pdf').forEach((path) => lecFileProtocol.registerPdf(path))
 
   if (activeMainWindow === null) {
@@ -31,6 +36,18 @@ function routeOpenFiles(paths: string[]): void {
   }
 
   fileOpenRouter.routeTo(activeMainWindow as unknown as FileRouteWindow, paths)
+}
+
+function recordOpenedTabPaths(paths: string[]): void {
+  for (const path of paths) {
+    if (!openedTabPaths.includes(path)) {
+      openedTabPaths.push(path)
+    }
+  }
+
+  if (crashMarker !== null) {
+    void crashMarker.recordOpenTabPaths(openedTabPaths).catch(() => undefined)
+  }
 }
 
 async function openMainWindow(configStore: ConfigStore): Promise<void> {
@@ -64,7 +81,11 @@ if (isPrimaryInstance) {
   })
 
   app.whenReady().then(async () => {
-    const configStore = new ConfigStore(new DataStore(app.getPath('userData')))
+    const dataStore = new DataStore(app.getPath('userData'))
+    const configStore = new ConfigStore(dataStore)
+    crashMarker = new CrashMarker(dataStore)
+    await crashMarker.start(openedTabPaths)
+    bindCrashMarkerCleanExit(app as unknown as CrashMarkerLifecycleApp, crashMarker)
     registerLecFileProtocol(protocol as unknown as LecFileProtocolPort, lecFileProtocol)
     registerFileReadIpcHandlers(ipcMain as unknown as FileReadIpcMainPort, lecFileProtocol)
     registerLibraryIpcHandlers(ipcMain as unknown as LibraryIpcMainPort, libraryService)
