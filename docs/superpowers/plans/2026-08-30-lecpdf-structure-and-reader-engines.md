@@ -60,7 +60,7 @@
 - Consumes: Electron-Vite 的 `main`、`preload`、`renderer` 入口约定。
 - Produces: `@electron/*`、`@engines/*`、`@app/*` 路径别名，以及指向新目录的构建入口。
 
-- [ ] 写一个配置断言，验证主进程和 preload 入口均位于 `electron/`，渲染入口为 `src/main.tsx`。
+- [x] 写一个配置断言，验证主进程和 preload 入口均位于 `electron/`，渲染入口为 `src/main.tsx`。
 
 ```ts
 expect(resolveBuildEntries()).toEqual({
@@ -70,11 +70,11 @@ expect(resolveBuildEntries()).toEqual({
 })
 ```
 
-- [ ] 运行该测试，确认旧入口下断言失败或入口尚未存在。
-- [ ] 创建目标目录并迁入入口文件；修改 Electron-Vite 与 TypeScript 别名，使构建只解析新入口。
-- [ ] 在迁入的入口和配置处写中文模块注释，说明进程边界及为何使用别名。
-- [ ] 运行 `corepack pnpm typecheck`、`corepack pnpm build` 与 `corepack pnpm test:run`。
-- [ ] 将本任务标记为完成，提交 `refactor: 建立模块化目录与构建入口` 并推送。
+- [x] 运行该测试，确认旧入口下断言失败或入口尚未存在。
+- [x] 创建目标目录并迁入入口文件；修改 Electron-Vite 与 TypeScript 别名，使构建只解析新入口。
+- [x] 在迁入的入口和配置处写中文模块注释，说明进程边界及为何使用别名。
+- [x] 运行 `corepack pnpm typecheck`、`corepack pnpm build` 与 `corepack pnpm test:run`。
+- [x] 将本任务标记为完成，提交 `refactor: 建立模块化目录与构建入口` 并推送。
 
 ### Task 2：迁移共享契约、主进程与 preload，并补齐注释
 
