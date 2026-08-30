@@ -11,6 +11,7 @@ import { CrashMarker } from './crash-marker'
 import { bindCrashMarkerCleanExit, type CrashMarkerLifecycleApp } from './crash-marker-lifecycle'
 import { DataStore } from './dataStore'
 import { registerDataIpcHandlers, type DataIpcMainPort } from './data-ipc'
+import { registerSidecarIpcHandlers, type SidecarIpcMainPort } from './sidecar-ipc'
 import { FileOpenRouter, getSupportedDocumentPaths, type FileRouteWindow } from './file-open-router'
 import { registerFileReadIpcHandlers, type FileReadIpcMainPort } from './file-read-ipc'
 import { registerLibraryIpcHandlers, type LibraryIpcMainPort } from './library-ipc'
@@ -98,6 +99,7 @@ if (isPrimaryInstance) {
     process.on('unhandledRejection', (error) => log.error('未处理拒绝', error))
     const configStore = new ConfigStore(dataStore)
     registerDataIpcHandlers(ipcMain as unknown as DataIpcMainPort, dataStore)
+    registerSidecarIpcHandlers(ipcMain as unknown as SidecarIpcMainPort, dataStore)
     const backupService = new BackupService(dataStore, undefined, dialog as unknown as BackupSaveDialog)
     backupScheduler = new BackupScheduler(backupService)
     backupScheduler.configure((await configStore.load()).general.autoBackup)

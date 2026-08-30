@@ -3,6 +3,7 @@ import {
   DATA_IPC_CHANNELS,
   FILE_READ_IPC_CHANNELS,
   LIBRARY_IPC_CHANNELS,
+  SIDECAR_IPC_CHANNELS,
   LIFECYCLE_IPC_CHANNELS,
   UPDATE_IPC_CHANNELS,
   WINDOW_IPC_CHANNELS,
@@ -184,6 +185,13 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
       writeJson: async <T extends PersistedDocument>(path: PersistedDocumentPath, document: T) => {
         if (ipcRenderer === undefined) return unavailable<void>('data.writeJson')()
         await ipcRenderer.invoke(DATA_IPC_CHANNELS.writeJson, path, document)
+      }
+    }),
+    sidecar: Object.freeze({
+      read: async (path: string) => ipcRenderer === undefined ? unavailable<import('../../shared/schema').Sidecar | null>('sidecar.read')() : ipcRenderer.invoke(SIDECAR_IPC_CHANNELS.read, path) as Promise<import('../../shared/schema').Sidecar | null>,
+      write: async (sidecar: import('../../shared/schema').Sidecar) => {
+        if (ipcRenderer === undefined) return unavailable<void>('sidecar.write')()
+        await ipcRenderer.invoke(SIDECAR_IPC_CHANNELS.write, sidecar)
       }
     }),
     backup: createBackupApi(ipcRenderer),

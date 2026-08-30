@@ -42,6 +42,7 @@ export const BACKUP_IPC_CHANNELS = {
 
 export const UPDATE_IPC_CHANNELS = { checkForUpdates: 'lec:update:check' } as const
 export const DATA_IPC_CHANNELS = { readJson: 'lec:data:read-json', writeJson: 'lec:data:write-json' } as const
+export const SIDECAR_IPC_CHANNELS = { read: 'lec:sidecar:read', write: 'lec:sidecar:write' } as const
 
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
@@ -109,6 +110,10 @@ export interface LecApi {
   readonly data: Readonly<{
     readJson<T extends PersistedDocument>(path: PersistedDocumentPath): Promise<T | null>
     writeJson<T extends PersistedDocument>(path: PersistedDocumentPath, document: T): Promise<void>
+  }>
+  readonly sidecar: Readonly<{
+    read(path: string): Promise<Sidecar | null>
+    write(sidecar: Sidecar): Promise<void>
   }>
   readonly backup: Readonly<{
     runBackup(): Promise<BackupResult>
