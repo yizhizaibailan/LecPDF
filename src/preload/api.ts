@@ -1,5 +1,6 @@
 import {
   BACKUP_IPC_CHANNELS,
+  DATA_IPC_CHANNELS,
   FILE_READ_IPC_CHANNELS,
   LIBRARY_IPC_CHANNELS,
   LIFECYCLE_IPC_CHANNELS,
@@ -11,6 +12,7 @@ import {
   type ImportResult,
   type LecApi,
   type PersistedDocument,
+  type PersistedDocumentPath,
   type UpdateCheckResult
 } from '../../shared/ipc'
 
@@ -178,11 +180,10 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
     library: createLibraryApi(ipcRenderer),
     fileRead: createFileReadApi(ipcRenderer),
     data: Object.freeze({
-      readJson: async <T extends PersistedDocument>() => {
-        throw new Error('尚未实现：data.readJson')
-      },
-      writeJson: async <T extends PersistedDocument>() => {
-        throw new Error('尚未实现：data.writeJson')
+      readJson: async <T extends PersistedDocument>(path: PersistedDocumentPath) => ipcRenderer === undefined ? unavailable<T | null>('data.readJson')() : ipcRenderer.invoke(DATA_IPC_CHANNELS.readJson, path) as Promise<T | null>,
+      writeJson: async <T extends PersistedDocument>(path: PersistedDocumentPath, document: T) => {
+        if (ipcRenderer === undefined) return unavailable<void>('data.writeJson')()
+        await ipcRenderer.invoke(DATA_IPC_CHANNELS.writeJson, path, document)
       }
     }),
     backup: createBackupApi(ipcRenderer),

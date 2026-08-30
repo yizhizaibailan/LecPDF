@@ -41,6 +41,7 @@ export const BACKUP_IPC_CHANNELS = {
 } as const
 
 export const UPDATE_IPC_CHANNELS = { checkForUpdates: 'lec:update:check' } as const
+export const DATA_IPC_CHANNELS = { readJson: 'lec:data:read-json', writeJson: 'lec:data:write-json' } as const
 
 export type PersistedDocument = Config | Library | RuntimeMark | Sidecar
 export type PersistedDocumentPath = 'config' | 'library' | 'runtime' | `data/${string}`
