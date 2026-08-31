@@ -18,7 +18,7 @@
 - [x] 建立 Ant Design 主题与 Solar 图标基础。
 - [x] 建立共享 schema、IPC 契约和 preload 安全 API 骨架。
 - [x] 建立 Vitest、TypeScript 检查和 Electron-Vite 生产构建质量门禁。
-- [-] 按参考截图完成 `electron / engines / src` 模块化目录重构。
+- [-] 按参考项目真实目录完成 `electron / src` 模块化目录重构（阅读内核适配位于 `src/data/readers`）。
 - [ ] 将单体 `App.tsx` 拆为布局、页面、阅读器、路由、状态和可复用组件。
 - [ ] 建立中英文文案资源与 i18n 热切换。
 - [ ] 为所有既有与新增 TypeScript/TSX 文件补齐中文职责与实现注释。
@@ -141,4 +141,4 @@
 
 - 当前阶段：**0. 架构、质量与工程规范**。
 - 当前任务：**建立文档路由、阅读会话状态与领域化数据访问**（详见专项清单 Task 4）。
-- 下一提交目标：建立 PDF/Foliate 文档分流、会话状态仓库和安全的渲染层数据访问入口。
+- 下一提交目标：在 `src/router`、`src/stores`、`src/db-api`、`src/data` 与 `src/types` 建立 PDF/Foliate 文档分流、会话状态仓库和安全的渲染层数据访问入口。

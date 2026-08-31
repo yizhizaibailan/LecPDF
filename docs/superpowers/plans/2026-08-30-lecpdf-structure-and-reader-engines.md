@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将 LecPDF 重构为参考截图中的模块化目录，并以 EmbedPDF 承担 PDF 阅读、以 foliate-js 承担非 PDF 电子书阅读，同时补齐既有与新增代码的中文注释。
+**Goal:** 将 LecPDF 重构为参考仓库 `main/src` 真实结构中的模块化目录，并以 EmbedPDF 承担 PDF 阅读、以 foliate-js 承担非 PDF 电子书阅读，同时补齐既有与新增代码的中文注释。
 
-**Architecture:** Electron 进程代码迁入 `electron/`，阅读内核迁入 `engines/`，界面业务迁入根目录 `src/` 的组件、页面、阅读器和状态目录。页面只协调状态和视图；阅读引擎通过明确的适配层实现；所有跨进程读写仍经由 preload 的受限 API。
+**Architecture:** Electron 进程代码迁入 `electron/`，阅读内核适配代码迁入 `src/data/readers/`，界面业务归入参考项目既有的 `src/components/`、`src/pages/`、`src/router/` 和 `src/stores/` 等目录。页面只协调状态和视图；阅读引擎通过明确的适配层实现；所有跨进程读写仍经由 preload 的受限 API。
 
 **Tech Stack:** Electron 44、electron-vite、React 18、TypeScript 5、Zustand、EmbedPDF、foliate-js、Vitest。
 
@@ -28,22 +28,21 @@
 | `electron/main/` | 窗口、IPC、文件协议、存储、备份、更新 | 原 `src/main/` |
 | `electron/preload/` | 白名单 API 与渲染层类型桥接 | 原 `src/preload/` |
 | `electron/shared/` | IPC channel 与跨进程 schema | 原 `shared/` |
-| `electron/types/` | `window.lec` 与 Electron 环境声明 | 新建/迁入渲染声明 |
-| `engines/pdf/` | EmbedPDF 适配与 PDF 专属能力 | 原 `src/renderer/engines/pdf/` |
-| `engines/foliate/` | foliate-js 适配与 EPUB 专属能力 | 原 `src/renderer/engines/epub/` |
-| `src/components/` | 可复用、无业务状态的组件 | 从 `App.tsx` 拆分 |
+| `src/components/Reader/` | 公共阅读器 UI、PDF/Foliate 视图 | 从 `App.tsx` 拆分 |
+| `src/components/TitleBar/` | 标题栏及无边框窗口控制 | 从 `AppLayout.tsx` 拆分 |
+| `src/data/readers/pdf/` | EmbedPDF 适配与 PDF 专属能力 | 原 `src/renderer/engines/pdf/` |
+| `src/data/readers/foliate/` | foliate-js 适配与 EPUB 专属能力 | 原 `src/renderer/engines/epub/` |
 | `src/config/` | 文件格式、默认阅读设置 | 新建 |
 | `src/data/` | sidecar/导入导出等数据转换 | 新建 |
 | `src/db-api/` | 渲染层的 preload API 封装 | 新建 |
-| `src/layouts/` | 标题栏与阅读页面框架 | 从 `App.tsx` 拆分 |
+| `src/layouts/` | 应用页面框架 | 从 `App.tsx` 拆分 |
 | `src/locales/` | 中文 UI 文案 | 新建 |
-| `src/pages/` | 页面组合 | 从 `App.tsx` 拆分 |
-| `src/reader/` | 公共阅读器 UI、PDF/Foliate 视图 | 从 `App.tsx` 拆分 |
+| `src/pages/home/` | 开始页 | 从 `App.tsx` 拆分 |
+| `src/pages/reader-reserved/` | 统一阅读页与格式分发 | 从 `App.tsx` 拆分 |
 | `src/router/` | 文档类型分发与启动文件路由 | 新建 |
 | `src/stores/` | 会话和界面 Zustand 状态 | 新建 |
 | `src/styles/` | 全局与阅读器样式 | 原 `styles.css` |
-| `src/types/` | 渲染层局部类型 | 从 `App.tsx` 拆分 |
-| `src/utils/` | 纯函数工具 | 新建 |
+| `src/types/` | 渲染层局部类型与 `window.lec` 声明 | 从 `App.tsx` 与过渡声明迁入 |
 
 ## 开发清单
 
@@ -132,10 +131,12 @@ expect(detectReaderKind('notes.txt')).toBeNull()
 
 **Files:**
 
-- Create: `src/router/document-router.ts`、`src/router/AppRouter.tsx`
+- Create: `src/router/document-router.ts`
+- Modify: `src/router/index.tsx`
 - Create: `src/stores/reader-store.ts`
 - Create: `src/db-api/document-api.ts`、`src/data/document-session.ts`
 - Create: `src/types/reader.ts`
+- Move: `electron/types/window.d.ts` 到 `src/types/window.d.ts`
 - Test: `src/router/document-router.test.ts`、`src/stores/reader-store.test.ts`
 
 **Interfaces:**
@@ -155,11 +156,10 @@ expect(detectReaderKind('notes.txt')).toBeNull()
 
 **Files:**
 
-- Move/Create: `engines/pdf/embedpdf-adapter.ts`、`src/reader/pdf/PdfReaderView.tsx`
-- Create: `src/reader/PdfToolbar.tsx`、`src/reader/PdfSidebar.tsx`、`src/reader/PdfSearchBar.tsx`
-- Create: `src/reader/types.ts`
-- Modify: `src/pages/ReaderPage.tsx`
-- Test: `engines/pdf/embedpdf-adapter.test.ts`、`src/reader/pdf/PdfReaderView.test.tsx`
+- Move/Create: `src/data/readers/pdf/embedpdf-adapter.ts`、`src/components/Reader/PdfReaderView.tsx`
+- Create: `src/components/Reader/PdfToolbar.tsx`、`src/components/Reader/PdfSidebar.tsx`、`src/components/Reader/PdfSearchBar.tsx`
+- Modify: `src/pages/reader-reserved/index.tsx`
+- Test: `src/data/readers/pdf/embedpdf-adapter.test.ts`、`src/components/Reader/PdfReaderView.test.tsx`
 
 **Interfaces:**
 
@@ -169,7 +169,7 @@ expect(detectReaderKind('notes.txt')).toBeNull()
 - [ ] 先写 PDF 视图测试：没有源地址时不渲染 `PDFViewer`；给定源地址时传入 EmbedPDF 配置。
 - [ ] 先写控制器测试，验证页码输入会限制为 `1..totalPages`，且搜索空词会停止搜索。
 - [ ] 运行测试，确认拆分前的模块无法满足新接口。
-- [ ] 从旧 `App.tsx` 迁移 PDF 工具栏、搜索、目录和缩略图组件；只通过 `embedpdf-adapter` 获取插件能力。
+- [ ] 从旧 `App.tsx` 迁移 PDF 工具栏、搜索、目录和缩略图组件；只通过 `embedpdf-adapter` 获取插件能力，并从 `pages/reader-reserved` 组合页面。
 - [ ] 在 `embedpdf-adapter` 文件顶部明确注释“PDF 只能使用 EmbedPDF”，并在对象 URL 生命周期、插件订阅取消和缩略图 URL 回收处写实现原因。
 - [ ] 运行 `corepack pnpm test:run`、`corepack pnpm typecheck`、`corepack pnpm build`。
 - [ ] 将本任务标记为完成，提交 `refactor: 拆分 EmbedPDF 阅读器与控制组件` 并推送。
@@ -179,10 +179,10 @@ expect(detectReaderKind('notes.txt')).toBeNull()
 **Files:**
 
 - Modify: `package.json`、`pnpm-lock.yaml`、`src/config/reader-formats.ts`
-- Create: `engines/foliate/foliate-adapter.ts`、`engines/foliate/foliate-types.ts`
-- Create: `src/reader/foliate/FoliateReaderView.tsx`
-- Modify: `src/pages/ReaderPage.tsx`、`src/db-api/document-api.ts`
-- Test: `engines/foliate/foliate-adapter.test.ts`、`src/reader/foliate/FoliateReaderView.test.tsx`
+- Create: `src/data/readers/foliate/foliate-adapter.ts`、`src/data/readers/foliate/foliate-types.ts`
+- Create: `src/components/Reader/FoliateReaderView.tsx`
+- Modify: `src/pages/reader-reserved/index.tsx`、`src/db-api/document-api.ts`
+- Test: `src/data/readers/foliate/foliate-adapter.test.ts`、`src/components/Reader/FoliateReaderView.test.tsx`
 
 **Interfaces:**
 
@@ -211,10 +211,11 @@ expect(fakeFoliateFactory.open).toHaveBeenCalledOnce()
 
 **Files:**
 
-- Create: `src/pages/ReaderPage.tsx`、`src/pages/StartPage.tsx`
-- Create: `src/reader/ReaderWorkspace.tsx`、`src/reader/ReaderErrorState.tsx`
-- Modify: `src/router/AppRouter.tsx`、`src/layouts/AppLayout.tsx`
-- Test: `src/pages/ReaderPage.test.tsx`、`src/router/AppRouter.test.tsx`
+- Create: `src/pages/home/index.tsx`、`src/pages/reader-reserved/index.tsx`
+- Create: `src/components/Reader/ReaderWorkspace.tsx`、`src/components/Reader/ReaderErrorState.tsx`
+- Create: `src/components/TitleBar/index.tsx`、`src/components/TitleBar/WindowControls.tsx`
+- Modify: `src/router/index.tsx`、`src/layouts/AppLayout.tsx`
+- Test: `src/pages/reader-reserved/index.test.tsx`、`src/router/index.test.tsx`
 
 **Interfaces:**
 
@@ -223,7 +224,7 @@ expect(fakeFoliateFactory.open).toHaveBeenCalledOnce()
 
 - [ ] 写页面测试：无会话显示开始页；PDF 会话显示 PDF 视图；Foliate 会话显示 Foliate 视图；打开失败显示错误状态。
 - [ ] 运行测试，确认重构前单体 `App.tsx` 不满足页面边界。
-- [ ] 实现页面组合与路由，移除单体 `App.tsx` 中的业务 UI；保留最小应用启动组件。
+- [ ] 实现页面组合与路由，移除单体 `App.tsx` 中的业务 UI；将已拆出的窗口控制进一步放入 `components/TitleBar`，保留最小应用启动组件。
 - [ ] 注释路由分发条件以及错误状态不泄露本地绝对路径的原因。
 - [ ] 运行 `corepack pnpm test:run`、`corepack pnpm typecheck`、`corepack pnpm build`。
 - [ ] 将本任务标记为完成，提交 `feat: 完成统一阅读页面与格式分发` 并推送。
@@ -232,7 +233,7 @@ expect(fakeFoliateFactory.open).toHaveBeenCalledOnce()
 
 **Files:**
 
-- Modify: `electron/**/*.ts`、`engines/**/*.ts`、`src/**/*.ts`、`src/**/*.tsx`
+- Modify: `electron/**/*.ts`、`src/data/readers/**/*.ts`、`src/**/*.ts`、`src/**/*.tsx`
 - Exclude: 自动生成文件、构建输出、依赖目录与纯测试断言文本。
 - Test: `scripts/check-code-comments.mjs`、`scripts/check-code-comments.test.ts`（如使用可测试的检查函数）
 
