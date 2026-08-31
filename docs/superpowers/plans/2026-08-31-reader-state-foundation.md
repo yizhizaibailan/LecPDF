@@ -26,6 +26,10 @@
 
 | 文件 | 职责 | 生产代码上限 |
 | --- | --- | ---: |
+| `electron/shared/ipc.ts` | 受限 EPUB 字节读取的白名单 IPC 通道 | 30 行 |
+| `electron/main/lec-file-protocol.ts` | 已授权文档登记与 EPUB 字节读取 | 220 行 |
+| `electron/main/file-read-ipc.ts` | 文件读取 IPC 的输入校验与调用转发 | 120 行 |
+| `electron/preload/api.ts` | 将受限字节读取暴露为 `LecApi.fileRead.readBuffer` | 180 行 |
 | `src/types/document.ts` | 文档类型、标准化错误与安全展示标题 | 100 行 |
 | `src/types/reader.ts` | 会话状态、阅读位置与临时文档来源类型 | 130 行 |
 | `src/router/document-router.ts` | 纯格式分流；不访问 IPC 或 Store | 100 行 |
@@ -38,7 +42,119 @@
 
 本计划完成后，后续 PDF 计划可消费 `ReaderSession`、`DocumentSource` 和 `DocumentSessionRegistry`；后续页面计划可消费 `useTabStore` 与 `useReaderStore`。阅读内核适配器仍将放入 `src/data/readers/pdf/` 和 `src/data/readers/foliate/`。
 
-## Task 1：建立通用类型、纯格式路由与渲染层窗口声明
+## Task 1：建立已授权 EPUB 字节读取 IPC
+
+**Files:**
+
+- Modify: `electron/shared/ipc.ts`
+- Modify: `electron/main/lec-file-protocol.ts`
+- Modify: `electron/main/lec-file-protocol.test.ts`
+- Modify: `electron/main/file-read-ipc.ts`
+- Modify: `electron/main/file-read-ipc.test.ts`
+- Modify: `electron/main/index.ts`
+- Modify: `electron/preload/api.ts`
+- Modify: `electron/preload/api.test.ts`
+
+**Interfaces:**
+
+- Consumes: 系统文件打开流程中的已验证 `.pdf` / `.epub` 路径，以及现有 `LecFileProtocol` 的路径标准化能力。
+- Produces:
+
+```ts
+export const FILE_READ_IPC_CHANNELS = {
+  getPdfUrl: 'lec:file-read:get-pdf-url',
+  readBuffer: 'lec:file-read:read-buffer'
+} as const
+
+export type AuthorizedDocumentReader = {
+  authorizeDocument(path: string): void
+  getPdfUrl(path: string): string
+  readEpubBuffer(path: string): Promise<ArrayBuffer>
+}
+```
+
+- `readBuffer` 只接受已登记的 `.epub`；PDF 继续使用 `getPdfUrl`，其他扩展名或未登记路径必须拒绝。
+
+- [ ] **Step 1: 写失败的主进程、preload 与授权测试**
+
+```ts
+test('只读取已授权的 EPUB 字节，且拒绝未授权路径和 PDF', async () => {
+  const protocol = new LecFileProtocol({
+    stat: async () => ({ size: 2, isFile: () => true }),
+    createReadStream: () => new Readable(),
+    readFile: async () => Buffer.from([0x50, 0x4b])
+  })
+
+  protocol.authorizeDocument('C:\\Books\\novel.epub')
+  await expect(protocol.readEpubBuffer('C:\\Books\\novel.epub')).resolves.toEqual(new Uint8Array([0x50, 0x4b]).buffer)
+  await expect(protocol.readEpubBuffer('C:\\Private\\secret.epub')).rejects.toThrow('文档未获授权')
+  await expect(protocol.readEpubBuffer('C:\\Books\\guide.pdf')).rejects.toThrow('只支持 EPUB 文件')
+})
+
+test('preload 将 readBuffer 转发到固定白名单通道', async () => {
+  const invoked: string[] = []
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async (channel) => { invoked.push(channel); return new ArrayBuffer(2) },
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+  await expect(api.fileRead.readBuffer('C:\\Books\\novel.epub')).resolves.toBeInstanceOf(ArrayBuffer)
+  expect(invoked).toEqual([FILE_READ_IPC_CHANNELS.readBuffer])
+})
+```
+
+- [ ] **Step 2: 运行测试，确认现有实现尚未提供读取能力**
+
+Run: `corepack pnpm exec vitest run electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.test.ts electron/preload/api.test.ts`
+
+Expected: FAIL，提示 `authorizeDocument` / `readEpubBuffer` / `readBuffer` 的实际调用尚未实现。
+
+- [ ] **Step 3: 实现最小白名单读取链路**
+
+```ts
+// electron/main/lec-file-protocol.ts
+authorizeDocument(path: string): void {
+  const absolutePath = resolve(path)
+  if (!['.pdf', '.epub'].includes(extname(absolutePath).toLowerCase())) {
+    throw new Error('不支持的文档格式')
+  }
+  this.authorizedPaths.add(absolutePath)
+}
+
+async readEpubBuffer(path: string): Promise<ArrayBuffer> {
+  const absolutePath = this.requireAuthorizedPath(path, '.epub')
+  const bytes = await this.fileSystem.readFile(absolutePath)
+  return Uint8Array.from(bytes).buffer
+}
+```
+
+- 为 `ProtocolFileSystem` 补充 `readFile(path): Promise<Uint8Array>`，默认实现使用 `node:fs/promises` 的 `readFile`；通过 `Uint8Array.from` 生成精确副本，避免把 Node Buffer 的底层剩余容量一并暴露给渲染层。
+- `registerPdf(path)` 先调用 `authorizeDocument(path)`，继续只为 PDF 生成 `lec-file://` URL；`electron/main/index.ts` 在路由系统打开文件前为每个已支持路径调用 `authorizeDocument(path)`。
+- `file-read-ipc.ts` 增加 `readBuffer` handler，对非字符串路径抛出“EPUB 路径无效”，再调用 `readEpubBuffer`；handler 返回类型扩大为 `string | Promise<ArrayBuffer>`。
+- `preload/api.ts` 的 `readBuffer` 只能调用 `FILE_READ_IPC_CHANNELS.readBuffer`，并验证返回值为 `ArrayBuffer`；主进程返回其他值时抛出固定错误。
+- 为授权集合、扩展名限制、ArrayBuffer 切片和 preload 类型验证写中文注释，说明它们防止渲染层读取任意本地文件。
+
+- [ ] **Step 4: 运行 IPC 定向回归测试**
+
+Run: `corepack pnpm exec vitest run electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.test.ts electron/preload/api.test.ts`
+
+Expected: PASS，已授权 EPUB 可读取，未授权路径/PDF/错误返回值均被拒绝，PDF URL 行为保持通过。
+
+- [ ] **Step 5: 运行全量质量门禁**
+
+Run: `corepack pnpm test:run; corepack pnpm typecheck; corepack pnpm build; git diff --check`
+
+Expected: 全部命令以退出码 0 结束。
+
+- [ ] **Step 6: 更新专项复选框并提交切片**
+
+```bash
+git add electron/shared/ipc.ts electron/main/lec-file-protocol.ts electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.ts electron/main/file-read-ipc.test.ts electron/main/index.ts electron/preload/api.ts electron/preload/api.test.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md
+git commit -m "feat: 增加受限 EPUB 字节读取"
+```
+
+## Task 2：建立通用类型、纯格式路由与渲染层窗口声明
 
 **Files:**
 
@@ -173,7 +289,7 @@ git add src/types src/router/document-router.ts src/router/document-router.test.
 git commit -m "feat: 建立文档路由与通用类型"
 ```
 
-## Task 2：建立受限文档来源访问边界
+## Task 3：建立受限文档来源访问边界
 
 **Files:**
 
@@ -182,7 +298,7 @@ git commit -m "feat: 建立文档路由与通用类型"
 
 **Interfaces:**
 
-- Consumes: `window.lec.fileRead.getPdfUrl(path)`、`window.lec.fileRead.readBuffer(path)` 与 Task 1 的 `DocumentKind`、错误类型和 `DocumentSource`。
+- Consumes: `window.lec.fileRead.getPdfUrl(path)`、`window.lec.fileRead.readBuffer(path)` 与 Task 2 的 `DocumentKind`、错误类型和 `DocumentSource`。
 - Produces:
 
 ```ts
@@ -269,7 +385,7 @@ git add src/db-api/document-api.ts src/db-api/document-api.test.ts docs/superpow
 git commit -m "feat: 建立受限文档数据访问"
 ```
 
-## Task 3：建立不入 Store 的会话资源注册表
+## Task 4：建立不入 Store 的会话资源注册表
 
 **Files:**
 
@@ -278,7 +394,7 @@ git commit -m "feat: 建立受限文档数据访问"
 
 **Interfaces:**
 
-- Consumes: Task 2 的 `DocumentApi`、Task 1 的 `DocumentKind` 和 `DocumentSource`。
+- Consumes: Task 3 的 `DocumentApi`、Task 2 的 `DocumentKind` 和 `DocumentSource`。
 - Produces:
 
 ```ts
@@ -354,7 +470,7 @@ git add src/data/document-session.ts src/data/document-session.test.ts docs/supe
 git commit -m "feat: 管理阅读会话临时资源"
 ```
 
-## Task 4：建立按标签隔离的阅读会话 Store
+## Task 5：建立按标签隔离的阅读会话 Store
 
 **Files:**
 
@@ -363,7 +479,7 @@ git commit -m "feat: 管理阅读会话临时资源"
 
 **Interfaces:**
 
-- Consumes: Task 1 的 `DocumentRoute`、Task 3 的 `DocumentSessionRegistry`。
+- Consumes: Task 2 的 `DocumentRoute`、Task 4 的 `DocumentSessionRegistry`。
 - Produces:
 
 ```ts
@@ -457,7 +573,7 @@ git add src/stores/reader-store.ts src/stores/reader-store.test.ts docs/superpow
 git commit -m "feat: 建立按标签隔离的阅读会话状态"
 ```
 
-## Task 5：建立标签协调与系统文件打开桥接
+## Task 6：建立标签协调与系统文件打开桥接
 
 **Files:**
 
@@ -468,7 +584,7 @@ git commit -m "feat: 建立按标签隔离的阅读会话状态"
 
 **Interfaces:**
 
-- Consumes: Task 4 的 `ReaderStore` Action，以及 `LecApi['lifecycle']['onOpenFileRequest']`。
+- Consumes: Task 5 的 `ReaderStore` Action，以及 `LecApi['lifecycle']['onOpenFileRequest']`。
 - Produces:
 
 ```ts
