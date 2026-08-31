@@ -114,7 +114,7 @@ expect(resolveBuildEntries()).toEqual({
 - Consumes: `window.lec.window` 与既有主题 token。
 - Produces: `isSupportedDocument(path): boolean`、`detectReaderKind(path): 'pdf' | 'foliate' | null`、`AppLayout`。
 
-- [ ] 写格式识别测试：`.PDF` 返回 `pdf`，`.epub` 返回 `foliate`，不受支持的扩展名返回 `null`。
+- [x] 写格式识别测试：`.PDF` 返回 `pdf`，`.epub` 返回 `foliate`，不受支持的扩展名返回 `null`。
 
 ```ts
 expect(detectReaderKind('BOOK.PDF')).toBe('pdf')
@@ -122,11 +122,11 @@ expect(detectReaderKind('book.epub')).toBe('foliate')
 expect(detectReaderKind('notes.txt')).toBeNull()
 ```
 
-- [ ] 运行该测试，确认新模块不存在时失败。
-- [ ] 创建格式配置、中文文案、`AppLayout` 与样式目录；将标题栏从旧 `App.tsx` 拆入布局层。
-- [ ] 给格式表说明“PDF 与 Foliate 的选择规则”，给标题栏说明“无边框窗口控制的数据流”。
-- [ ] 运行相关组件测试、`corepack pnpm typecheck` 和 `corepack pnpm build`。
-- [ ] 将本任务标记为完成，提交 `refactor: 建立渲染层基础目录与应用框架` 并推送。
+- [x] 运行该测试，确认新模块不存在时失败。
+- [x] 创建格式配置、中文文案、`AppLayout` 与样式目录；将标题栏从旧 `App.tsx` 拆入布局层。
+- [x] 给格式表说明“PDF 与 Foliate 的选择规则”，给标题栏说明“无边框窗口控制的数据流”。
+- [x] 运行相关组件测试、`corepack pnpm typecheck` 和 `corepack pnpm build`。
+- [x] 将本任务标记为完成，提交 `refactor: 建立渲染层基础目录与应用框架` 并推送。
 
 ### Task 4：建立路由、会话状态与领域化数据访问
 

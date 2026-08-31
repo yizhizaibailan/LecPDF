@@ -1,4 +1,3 @@
-import { BorderOutlined, CloseOutlined, MinusOutlined, ShrinkOutlined } from '@ant-design/icons'
 import { Empty, Typography } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -16,7 +15,8 @@ import {
   type PluginRegistry
 } from '@embedpdf/react-pdf-viewer'
 import { MatchFlag } from '@embedpdf/models'
-import { SolarIcon } from './SolarIcon'
+import { SolarIcon } from '../../components/SolarIcon'
+import { AppLayout } from '../../layouts/AppLayout'
 
 type AppProps = {
   version: string
@@ -42,42 +42,6 @@ type ThumbnailItem = {
   top: number
   labelHeight: number
   padding?: number
-}
-
-function WindowTitlebar(): JSX.Element {
-  const [maximized, setMaximized] = useState(false)
-
-  useEffect(() => window.lec.window.onMaximizedChange(setMaximized), [])
-
-  return (
-    <header
-      className="window-titlebar"
-      data-window-drag-region="true"
-      onDoubleClick={(event) => {
-        if ((event.target as HTMLElement).closest('button') === null) {
-          void window.lec.window.toggleMaximize()
-        }
-      }}
-    >
-      <span className="window-titlebar__name">LecPDF</span>
-      <div className="window-titlebar__controls" aria-label="窗口控制">
-        <button type="button" aria-label="最小化窗口" onClick={() => void window.lec.window.minimize()}>
-          <MinusOutlined />
-        </button>
-        <button
-          type="button"
-          aria-label="最大化或还原窗口"
-          title={maximized ? '还原窗口' : '最大化窗口'}
-          onClick={() => void window.lec.window.toggleMaximize()}
-        >
-          {maximized ? <ShrinkOutlined /> : <BorderOutlined />}
-        </button>
-        <button type="button" aria-label="关闭窗口" className="window-titlebar__close" onClick={() => void window.lec.window.close()}>
-          <CloseOutlined />
-        </button>
-      </div>
-    </header>
-  )
 }
 
 export function ReaderToolbar({ registry }: { registry: PluginRegistry | null }): JSX.Element {
@@ -416,8 +380,7 @@ export function App({ version }: AppProps): JSX.Element {
 
   if (pdfUrl !== null) {
     return (
-      <div className="app-frame">
-        <WindowTitlebar />
+      <AppLayout>
         <main className="reader-shell">
           <ReaderToolbar registry={registry} />
           <div className="reader-workspace">
@@ -439,13 +402,12 @@ export function App({ version }: AppProps): JSX.Element {
             </section>
           </div>
         </main>
-      </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="app-frame">
-      <WindowTitlebar />
+    <AppLayout>
       <main className="project-shell">
         <section className="project-shell__card" aria-label="LecPDF 项目状态">
           <span className="project-shell__tag">LecPDF</span>
@@ -461,6 +423,6 @@ export function App({ version }: AppProps): JSX.Element {
           {openError !== null && <Typography.Text type="danger">{openError}</Typography.Text>}
         </section>
       </main>
-    </div>
+    </AppLayout>
   )
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { expect, test } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { SolarIcon } from './SolarIcon'
+import { SolarIcon } from '../components/SolarIcon'
 import { lecTheme } from './theme'
 
 test('exposes the prototype palette through Ant Design tokens', () => {

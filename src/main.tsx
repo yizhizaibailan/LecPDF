@@ -1,5 +1,20 @@
 /**
- * 渲染层的新启动入口。
- * 在页面组件完全迁移前先复用旧启动模块，使 Electron-Vite 可以从根 `src` 目录启动且阅读功能保持不变。
+ * 渲染层的唯一启动入口。
+ * 在这里注入主题和全局样式，再挂载旧阅读页面；后续页面迁移不会改变 Electron-Vite 的入口路径。
  */
-import './renderer/src/main'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { ConfigProvider } from 'antd'
+import { lecTheme } from './config/theme'
+import { App } from './renderer/src/App'
+import './styles/index.css'
+
+const version = window.lec.app.version
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ConfigProvider theme={lecTheme}>
+      <App version={version} />
+    </ConfigProvider>
+  </React.StrictMode>
+)
