@@ -91,6 +91,32 @@ test('returns a registered PDF URL through the exposed file-read API', async () 
   await expect(api.fileRead.getPdfUrl('C:\\books\\reader.pdf')).resolves.toBe('lec-file://document/token-6')
 })
 
+test('forwards authorized EPUB buffer reads through the fixed IPC channel', async () => {
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async (channel, path) => {
+      expect(channel).toBe(FILE_READ_IPC_CHANNELS.readBuffer)
+      expect(path).toBe('C:\\books\\novel.epub')
+      return new Uint8Array([0x50, 0x4b]).buffer
+    },
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+
+  await expect(api.fileRead.readBuffer('C:\\books\\novel.epub')).resolves.toEqual(new Uint8Array([0x50, 0x4b]).buffer)
+})
+
+test('rejects a non-buffer payload returned by the file-read IPC channel', async () => {
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async () => 'not-an-array-buffer',
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+
+  await expect(api.fileRead.readBuffer('C:\\books\\novel.epub')).rejects.toThrow('主进程未返回有效文件字节')
+})
+
 test('forwards folder scans through the exposed library API', async () => {
   const ipcRenderer: IpcRendererPort = {
     invoke: async (channel, paths) => {

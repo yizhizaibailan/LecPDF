@@ -75,7 +75,7 @@ export type AuthorizedDocumentReader = {
 
 - `readBuffer` 只接受已登记的 `.epub`；PDF 继续使用 `getPdfUrl`，其他扩展名或未登记路径必须拒绝。
 
-- [ ] **Step 1: 写失败的主进程、preload 与授权测试**
+- [x] **Step 1: 写失败的主进程、preload 与授权测试**
 
 ```ts
 test('只读取已授权的 EPUB 字节，且拒绝未授权路径和 PDF', async () => {
@@ -104,13 +104,13 @@ test('preload 将 readBuffer 转发到固定白名单通道', async () => {
 })
 ```
 
-- [ ] **Step 2: 运行测试，确认现有实现尚未提供读取能力**
+- [x] **Step 2: 运行测试，确认现有实现尚未提供读取能力**
 
-Run: `corepack pnpm exec vitest run electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.test.ts electron/preload/api.test.ts`
+Run: `corepack pnpm test:run electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.test.ts electron/preload/api.test.ts`
 
 Expected: FAIL，提示 `authorizeDocument` / `readEpubBuffer` / `readBuffer` 的实际调用尚未实现。
 
-- [ ] **Step 3: 实现最小白名单读取链路**
+- [x] **Step 3: 实现最小白名单读取链路**
 
 ```ts
 // electron/main/lec-file-protocol.ts
@@ -135,19 +135,19 @@ async readEpubBuffer(path: string): Promise<ArrayBuffer> {
 - `preload/api.ts` 的 `readBuffer` 只能调用 `FILE_READ_IPC_CHANNELS.readBuffer`，并验证返回值为 `ArrayBuffer`；主进程返回其他值时抛出固定错误。
 - 为授权集合、扩展名限制、ArrayBuffer 切片和 preload 类型验证写中文注释，说明它们防止渲染层读取任意本地文件。
 
-- [ ] **Step 4: 运行 IPC 定向回归测试**
+- [x] **Step 4: 运行 IPC 定向回归测试**
 
-Run: `corepack pnpm exec vitest run electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.test.ts electron/preload/api.test.ts`
+Run: `corepack pnpm test:run electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.test.ts electron/preload/api.test.ts`
 
 Expected: PASS，已授权 EPUB 可读取，未授权路径/PDF/错误返回值均被拒绝，PDF URL 行为保持通过。
 
-- [ ] **Step 5: 运行全量质量门禁**
+- [x] **Step 5: 运行全量质量门禁**
 
 Run: `corepack pnpm test:run; corepack pnpm typecheck; corepack pnpm build; git diff --check`
 
 Expected: 全部命令以退出码 0 结束。
 
-- [ ] **Step 6: 更新专项复选框并提交切片**
+- [x] **Step 6: 更新专项复选框并提交切片**
 
 ```bash
 git add electron/shared/ipc.ts electron/main/lec-file-protocol.ts electron/main/lec-file-protocol.test.ts electron/main/file-read-ipc.ts electron/main/file-read-ipc.test.ts electron/main/index.ts electron/preload/api.ts electron/preload/api.test.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md
@@ -243,7 +243,7 @@ test('未知格式不泄露本机绝对路径', () => {
 
 - [ ] **Step 2: 运行测试，确认新路由模块尚未实现**
 
-Run: `corepack pnpm exec vitest run src/router/document-router.test.ts`
+Run: `corepack pnpm test:run src/router/document-router.test.ts`
 
 Expected: FAIL，提示无法解析 `./document-router`。
 
@@ -272,7 +272,7 @@ export function resolveDocumentRoute(path: string): DocumentRoute {
 
 - [ ] **Step 4: 运行路由与格式回归测试**
 
-Run: `corepack pnpm exec vitest run src/router/document-router.test.ts src/config/reader-formats.test.ts`
+Run: `corepack pnpm test:run src/router/document-router.test.ts src/config/reader-formats.test.ts`
 
 Expected: PASS，PDF 返回 `pdf`，EPUB 返回 `foliate`，未知格式没有路径。
 
@@ -340,7 +340,7 @@ test('读取失败只返回标准错误码', async () => {
 
 - [ ] **Step 2: 运行测试，确认模块不存在**
 
-Run: `corepack pnpm exec vitest run src/db-api/document-api.test.ts`
+Run: `corepack pnpm test:run src/db-api/document-api.test.ts`
 
 Expected: FAIL，提示无法解析 `./document-api`。
 
@@ -368,7 +368,7 @@ export function createDocumentApi(port: Pick<LecApi, 'fileRead'>): DocumentApi {
 
 - [ ] **Step 4: 运行数据边界测试**
 
-Run: `corepack pnpm exec vitest run src/db-api/document-api.test.ts`
+Run: `corepack pnpm test:run src/db-api/document-api.test.ts`
 
 Expected: PASS，PDF 不读取 buffer，Foliate 不请求 PDF URL，失败结果没有路径。
 
@@ -425,7 +425,7 @@ test('来源资源不写入 Store，而是按标签由注册表持有并可释�
 
 - [ ] **Step 2: 运行测试，确认注册表尚未实现**
 
-Run: `corepack pnpm exec vitest run src/data/document-session.test.ts`
+Run: `corepack pnpm test:run src/data/document-session.test.ts`
 
 Expected: FAIL，提示无法解析 `./document-session`。
 
@@ -453,7 +453,7 @@ export function createDocumentSessionRegistry(api: DocumentApi): DocumentSession
 
 - [ ] **Step 4: 运行注册表测试**
 
-Run: `corepack pnpm exec vitest run src/data/document-session.test.ts`
+Run: `corepack pnpm test:run src/data/document-session.test.ts`
 
 Expected: PASS，成功来源可按标签取得，关闭和清空后均无法再取得。
 
@@ -530,7 +530,7 @@ test('关闭会话同时移除状态并释放注册表资源', () => {
 
 - [ ] **Step 2: 运行测试，确认 Store 尚未实现**
 
-Run: `corepack pnpm exec vitest run src/stores/reader-store.test.ts`
+Run: `corepack pnpm test:run src/stores/reader-store.test.ts`
 
 Expected: FAIL，提示无法解析 `./reader-store`。
 
@@ -556,7 +556,7 @@ async openSession(tabId, path) {
 
 - [ ] **Step 4: 运行 Store 测试**
 
-Run: `corepack pnpm exec vitest run src/stores/reader-store.test.ts`
+Run: `corepack pnpm test:run src/stores/reader-store.test.ts`
 
 Expected: PASS，错误会重置、旧请求被忽略、关闭会释放资源、位置只更新目标标签。
 
@@ -637,7 +637,7 @@ test('系统文件打开事件只转发到标签 Action，并返回取消订阅�
 
 - [ ] **Step 2: 运行测试，确认协调模块尚未实现**
 
-Run: `corepack pnpm exec vitest run src/stores/tab-store.test.ts src/router/index.test.ts`
+Run: `corepack pnpm test:run src/stores/tab-store.test.ts src/router/index.test.ts`
 
 Expected: FAIL，提示无法解析 `./tab-store` 或 `./index`。
 
@@ -663,7 +663,7 @@ async openDocument(path) {
 
 - [ ] **Step 4: 运行标签和路由桥接测试**
 
-Run: `corepack pnpm exec vitest run src/stores/tab-store.test.ts src/router/index.test.ts`
+Run: `corepack pnpm test:run src/stores/tab-store.test.ts src/router/index.test.ts`
 
 Expected: PASS，开始页不可关闭、超过 20 个文档标签返回 `null`、外部文件事件只触发一次打开动作。
 

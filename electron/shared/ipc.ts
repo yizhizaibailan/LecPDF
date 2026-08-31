@@ -30,7 +30,8 @@ export const LIFECYCLE_IPC_CHANNELS = {
 } as const
 
 export const FILE_READ_IPC_CHANNELS = {
-  getPdfUrl: 'lec:file-read:get-pdf-url'
+  getPdfUrl: 'lec:file-read:get-pdf-url',
+  readBuffer: 'lec:file-read:read-buffer'
 } as const
 
 export const LIBRARY_IPC_CHANNELS = {

@@ -3,7 +3,6 @@
  */
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
-import { extname } from 'node:path'
 import log from 'electron-log/main'
 import { autoUpdater } from 'electron-updater'
 import { registerBackupIpcHandlers, type BackupIpcMainPort } from './backup-ipc'
@@ -41,7 +40,7 @@ let backupScheduler: BackupScheduler | null = null
 
 function routeOpenFiles(paths: string[]): void {
   recordOpenedTabPaths(paths)
-  paths.filter((path) => extname(path).toLowerCase() === '.pdf').forEach((path) => lecFileProtocol.registerPdf(path))
+  paths.forEach((path) => lecFileProtocol.authorizeDocument(path))
 
   if (activeMainWindow === null) {
     fileOpenRouter.enqueue(paths)

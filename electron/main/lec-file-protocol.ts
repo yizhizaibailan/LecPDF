@@ -3,13 +3,14 @@
  */
 import { randomUUID } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { stat } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { extname, resolve } from 'node:path'
 import { Readable } from 'node:stream'
 
 export type ProtocolFileSystem = {
   stat(path: string): Promise<{ size: number; isFile(): boolean }>
   createReadStream(path: string, options: { start: number; end: number }): Readable
+  readFile(path: string): Promise<Uint8Array>
 }
 
 export type LecFileProtocolPort = {
@@ -22,11 +23,12 @@ type ByteRange = {
   partial: boolean
 }
 
-const nodeFileSystem: ProtocolFileSystem = { stat, createReadStream }
+const nodeFileSystem: ProtocolFileSystem = { stat, createReadStream, readFile }
 
 export class LecFileProtocol {
   private readonly documents = new Map<string, string>()
   private readonly urlsByPath = new Map<string, string>()
+  private readonly authorizedPaths = new Set<string>()
 
   constructor(
     private readonly fileSystem: ProtocolFileSystem = nodeFileSystem,
@@ -38,6 +40,8 @@ export class LecFileProtocol {
     if (extname(absolutePath).toLowerCase() !== '.pdf') {
       throw new Error('只支持 PDF 文件')
     }
+
+    this.authorizeDocument(absolutePath)
 
     const existingUrl = this.urlsByPath.get(absolutePath)
     if (existingUrl !== undefined) {
@@ -51,12 +55,35 @@ export class LecFileProtocol {
     return url
   }
 
+  /**
+   * 将由系统打开流程验证过的文档登记为可读取资源。
+   * 主进程只为 PDF 和 EPUB 建立白名单，避免渲染进程借由 IPC 读取任意本地路径。
+   */
+  authorizeDocument(path: string): void {
+    const absolutePath = resolve(path)
+    const extension = extname(absolutePath).toLowerCase()
+    if (extension !== '.pdf' && extension !== '.epub') {
+      throw new Error('不支持的文档格式')
+    }
+    this.authorizedPaths.add(absolutePath)
+  }
+
   getPdfUrl(path: string): string {
-    const url = this.urlsByPath.get(resolve(path))
-    if (url === undefined) {
+    const absolutePath = resolve(path)
+    if (!this.authorizedPaths.has(absolutePath)) {
       throw new Error('文档未获授权')
     }
-    return url
+    return this.urlsByPath.get(absolutePath) ?? this.registerPdf(absolutePath)
+  }
+
+  /**
+   * 读取已授权 EPUB 的完整字节，供 foliate-js 在渲染层解析。
+   * 这里复制 Uint8Array 后再返回精确 ArrayBuffer，避免暴露 Node Buffer 的额外底层容量。
+   */
+  async readEpubBuffer(path: string): Promise<ArrayBuffer> {
+    const absolutePath = this.requireAuthorizedPath(path, '.epub')
+    const bytes = await this.fileSystem.readFile(absolutePath)
+    return Uint8Array.from(bytes).buffer
   }
 
   async handle(request: Request): Promise<Response> {
@@ -118,6 +145,20 @@ export class LecFileProtocol {
     }
 
     return this.documents.get(token) ?? null
+  }
+
+  /**
+   * 校验指定路径的扩展名和授权登记，集中保证每次文件读取都不能越过主进程白名单。
+   */
+  private requireAuthorizedPath(path: string, extension: '.epub'): string {
+    const absolutePath = resolve(path)
+    if (extname(absolutePath).toLowerCase() !== extension) {
+      throw new Error('只支持 EPUB 文件')
+    }
+    if (!this.authorizedPaths.has(absolutePath)) {
+      throw new Error('文档未获授权')
+    }
+    return absolutePath
   }
 }
 

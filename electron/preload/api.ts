@@ -115,7 +115,13 @@ function createFileReadApi(ipcRenderer?: IpcRendererPort): LecApi['fileRead'] {
   }
 
   return Object.freeze({
-    readBuffer: unavailable<ArrayBuffer>('fileRead.readBuffer'),
+    readBuffer: async (path: string) => {
+      const bytes = await ipcRenderer.invoke(FILE_READ_IPC_CHANNELS.readBuffer, path)
+      if (!(bytes instanceof ArrayBuffer)) {
+        throw new Error('主进程未返回有效文件字节')
+      }
+      return bytes
+    },
     getPdfUrl: async (path: string) => {
       const url = await ipcRenderer.invoke(FILE_READ_IPC_CHANNELS.getPdfUrl, path)
       if (typeof url !== 'string') {

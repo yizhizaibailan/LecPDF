@@ -15,7 +15,8 @@ function createFileSystem(): { fileSystem: ProtocolFileSystem; streamOptions: Ar
       createReadStream: (_path, options) => {
         streamOptions.push({ start: options.start, end: options.end })
         return Readable.from(Buffer.from('PDF range bytes'))
-      }
+      },
+      readFile: async () => Buffer.from('PDF bytes')
     },
     streamOptions
   }
@@ -66,6 +67,33 @@ test('returns reader URLs only for PDFs that the main process has registered', (
 
   expect(protocol.getPdfUrl('C:\\private\\approved.pdf')).toBe(url)
   expect(() => protocol.getPdfUrl('C:\\private\\unapproved.pdf')).toThrow('文档未获授权')
+})
+
+test('issues a PDF URL for a document already authorized by the open-file flow', () => {
+  const { fileSystem } = createFileSystem()
+  const protocol = new LecFileProtocol(fileSystem, () => 'token-7')
+  protocol.authorizeDocument('C:\\private\\opened.pdf')
+
+  expect(protocol.getPdfUrl('C:\\private\\opened.pdf')).toBe('lec-file://document/token-7')
+})
+
+test('only reads bytes for an authorized EPUB document', async () => {
+  const { fileSystem } = createFileSystem()
+  const readPaths: string[] = []
+  const protocol = new LecFileProtocol({
+    ...fileSystem,
+    readFile: async (path) => {
+      readPaths.push(path)
+      return new Uint8Array([0x50, 0x4b])
+    }
+  })
+
+  protocol.authorizeDocument('C:\\books\\novel.epub')
+
+  await expect(protocol.readEpubBuffer('C:\\books\\novel.epub')).resolves.toEqual(new Uint8Array([0x50, 0x4b]).buffer)
+  await expect(protocol.readEpubBuffer('C:\\private\\secret.epub')).rejects.toThrow('文档未获授权')
+  await expect(protocol.readEpubBuffer('C:\\books\\guide.pdf')).rejects.toThrow('只支持 EPUB 文件')
+  expect(readPaths).toEqual(['C:\\books\\novel.epub'])
 })
 
 test('registers the lec-file scheme with Electron protocol handling', async () => {
