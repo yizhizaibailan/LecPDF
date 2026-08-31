@@ -129,6 +129,8 @@ expect(detectReaderKind('notes.txt')).toBeNull()
 
 ### Task 4：建立路由、会话状态与领域化数据访问
 
+> 本任务的可执行 vertical slices 见 [单向数据流基础层实施计划](2026-08-31-reader-state-foundation.md)。该专项计划将本任务拆为通用路由、受限数据访问、会话资源、阅读状态和标签协调五个独立提交；实施时以专项计划的接口、测试和复选框为准。
+
 **Files:**
 
 - Create: `src/router/document-router.ts`
