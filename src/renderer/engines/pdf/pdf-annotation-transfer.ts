@@ -1,4 +1,4 @@
-import type { NormalizedPoint, NormalizedRect, UnifiedAnnotation } from '../../../../shared/schema'
+import type { NormalizedPoint, NormalizedRect, UnifiedAnnotation } from '../../../../electron/shared/schema'
 
 export type PdfPageSpace = { width: number; height: number; rotation: 0 | 90 | 180 | 270 }
 export type PdfPoint = { x: number; y: number }

@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts', 'electron.vite.config.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts', 'electron/**/*.test.ts', 'electron.vite.config.test.ts'],
     pool: 'forks',
     maxWorkers: 1
   }

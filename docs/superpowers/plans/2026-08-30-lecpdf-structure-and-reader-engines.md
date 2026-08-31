@@ -91,12 +91,12 @@ expect(resolveBuildEntries()).toEqual({
 - Consumes: 既有 `LecApi`、`DATA_IPC_CHANNELS`、`SIDECAR_IPC_CHANNELS` 和主进程 IPC 注册逻辑。
 - Produces: `window.lec: LecApi` 的统一声明；主、预加载和共享层只有 `@electron/*` 引用。
 
-- [ ] 先为 `LecApi`、IPC channel、sidecar 路径和受限文件协议分别写/更新回归测试，覆盖合法调用与越界路径拒绝。
-- [ ] 运行相关测试，记录迁移前的通过结果。
-- [ ] 移动共享、主进程和预加载文件，逐一修正导入路径；不改变 IPC channel 字符串或权限判断。
-- [ ] 给每个迁移文件增加中文文件注释；为导出的 IPC handler、存储服务和 preload 方法说明输入、输出与安全边界。
-- [ ] 运行 `corepack pnpm test:run`、`corepack pnpm typecheck`、`corepack pnpm build`。
-- [ ] 将本任务标记为完成，提交 `refactor: 迁移 Electron 进程与共享契约` 并推送。
+- [x] 先为 `LecApi`、IPC channel、sidecar 路径和受限文件协议分别写/更新回归测试，覆盖合法调用与越界路径拒绝。
+- [x] 运行相关测试，记录迁移前的通过结果。
+- [x] 移动共享、主进程和预加载文件，逐一修正导入路径；不改变 IPC channel 字符串或权限判断。
+- [x] 给每个迁移文件增加中文文件注释；为导出的 IPC handler、存储服务和 preload 方法说明输入、输出与安全边界。
+- [x] 运行 `corepack pnpm test:run`、`corepack pnpm typecheck`、`corepack pnpm build`。
+- [x] 将本任务标记为完成，提交 `refactor: 迁移 Electron 进程与共享契约` 并推送。
 
 ### Task 3：建立渲染层基础目录、文案与应用框架
 

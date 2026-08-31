@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import config from './electron.vite.config.ts'
 
@@ -22,5 +23,14 @@ describe('Electron-Vite 模块化目录入口', () => {
     expect(buildConfig.renderer?.build?.rollupOptions?.input).toEqual({
       index: expect.stringMatching(/[\\/]index\.html$/)
     })
+  })
+
+  it('在开发和生产构建时显式使用 TypeScript 配置源文件', () => {
+    const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+      scripts: Record<string, string>
+    }
+
+    expect(packageJson.scripts.dev).toContain('--config electron.vite.config.ts')
+    expect(packageJson.scripts.build).toContain('--config electron.vite.config.ts')
   })
 })

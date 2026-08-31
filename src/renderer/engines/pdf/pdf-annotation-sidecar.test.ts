@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import type { PdfSidecar, UnifiedAnnotation } from '../../../../shared/schema'
+import type { PdfSidecar, UnifiedAnnotation } from '../../../../electron/shared/schema'
 import { addPdfAnnotation, annotationsForPage, removePdfAnnotation, updatePdfAnnotation } from './pdf-annotation-sidecar'
 
 const annotation: UnifiedAnnotation = { id: 'highlight-1', type: 'highlight', loc: { page: 2, epubCfi: null }, quote: '重点', rects: [{ x: 0.1, y: 0.2, w: 0.3, h: 0.04 }], color: '#fff1a8', createdAt: 1, updatedAt: 1 }

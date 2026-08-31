@@ -19,7 +19,6 @@
     "electron/preload/**/*.ts",
     "electron/shared/**/*.ts",
     "src/main/**/*.ts",
-    "src/preload/**/*.ts",
-    "shared/**/*.ts"
+    "src/preload/**/*.ts"
   ]
 }

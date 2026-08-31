@@ -1,4 +1,4 @@
-import type { PdfSidecar, UnifiedAnnotation } from '../../../../shared/schema'
+import type { PdfSidecar, UnifiedAnnotation } from '../../../../electron/shared/schema'
 
 /** Sidecar-only PDF annotation mutations. Source PDFs are never modified here. */
 export function addPdfAnnotation(sidecar: PdfSidecar, annotation: UnifiedAnnotation): PdfSidecar {

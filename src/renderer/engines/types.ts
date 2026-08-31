@@ -1,4 +1,4 @@
-import type { EpubSettings, ReaderLayout, UnifiedAnnotation } from '../../../shared/schema'
+import type { EpubSettings, ReaderLayout, UnifiedAnnotation } from '../../../electron/shared/schema'
 
 export type EngineKind = 'pdf' | 'epub'
 export type LayoutMode = ReaderLayout

@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "shared/schema.ts", "shared/ipc.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "electron/shared/schema.ts", "electron/shared/ipc.ts", "electron/types/**/*.d.ts"]
 }

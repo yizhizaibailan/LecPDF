@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import type { UnifiedAnnotation } from '../../../../shared/schema'
+import type { UnifiedAnnotation } from '../../../../electron/shared/schema'
 import { annotationToPdfTransfer, normalizedToPdfPoint } from './pdf-annotation-transfer'
 
 test.each([0, 90, 180, 270] as const)('restores normalized points for %i degree PDF pages', (rotation) => {
