@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom/client'
 import { ConfigProvider } from 'antd'
 import { lecTheme } from './config/theme'
 import { createAppRuntime } from './config/app-runtime'
+import { WindowControlsProvider } from './layouts/AppLayout'
 import { ApplicationPage } from './pages/ApplicationPage'
 import './styles/index.css'
 
@@ -16,7 +17,9 @@ const runtime = createAppRuntime(lec)
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ConfigProvider theme={lecTheme}>
-      <ApplicationPage runtime={runtime} lifecycle={lec.lifecycle} dialogs={lec.dialogs} />
+      <WindowControlsProvider windowControls={lec.window}>
+        <ApplicationPage runtime={runtime} lifecycle={lec.lifecycle} dialogs={lec.dialogs} />
+      </WindowControlsProvider>
     </ConfigProvider>
   </React.StrictMode>
 )

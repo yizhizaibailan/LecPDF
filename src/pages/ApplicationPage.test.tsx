@@ -5,7 +5,15 @@
 import { expect, test, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createAppRuntime } from '../config/app-runtime'
+import { WindowControlsProvider } from '../layouts/AppLayout'
 import { ApplicationPage } from './ApplicationPage'
+
+const windowControls = {
+  minimize: async () => undefined,
+  toggleMaximize: async () => undefined,
+  close: async () => undefined,
+  onMaximizedChange: () => () => undefined
+}
 
 test('已打开 PDF 的应用页面组合标签栏和阅读页', async () => {
   const runtime = createAppRuntime(
@@ -17,7 +25,11 @@ test('已打开 PDF 的应用页面组合标签栏和阅读页', async () => {
 
   // 等待 Store 写入 ready 会话，确保页面从运行时选择到 PDF 来源。
   await runtime.tabStore.getState().openDocument('C:\\Books\\guide.pdf')
-  const html = renderToStaticMarkup(<ApplicationPage runtime={runtime} lifecycle={lifecycle} dialogs={dialogs} />)
+  const html = renderToStaticMarkup(
+    <WindowControlsProvider windowControls={windowControls}>
+      <ApplicationPage runtime={runtime} lifecycle={lifecycle} dialogs={dialogs} />
+    </WindowControlsProvider>
+  )
 
   expect(html).toContain('guide.pdf')
   expect(html).toContain('aria-label="PDF 阅读视图"')

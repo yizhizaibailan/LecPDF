@@ -49,6 +49,7 @@ test('导航侧栏提供缩略图和目录标签', () => {
 
   expect(html).toContain('aria-label="打开 PDF 缩略图"')
   expect(html).toContain('aria-label="打开 PDF 目录"')
+  expect(html).toContain('PDF 没有可用目录')
 })
 
 test('缩略图在卸载后完成时立即释放对象 URL 且不写入状态', async () => {
