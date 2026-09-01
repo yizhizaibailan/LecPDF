@@ -311,7 +311,7 @@ export function createDocumentApi(port: Pick<LecApi, 'fileRead'>): DocumentApi
 
 - PDF 成功时返回 `{ ok: true, source: { kind: 'pdf', url: string } }`；Foliate 成功时返回 `{ ok: true, source: { kind: 'foliate', bytes: ArrayBuffer } }`。
 
-- [ ] **Step 1: 写失败的 `document-api` 测试**
+- [x] **Step 1: 写失败的 `document-api` 测试**
 
 ```ts
 test('PDF 仅请求受限的 PDF URL', async () => {
@@ -338,13 +338,13 @@ test('读取失败只返回标准错误码', async () => {
 })
 ```
 
-- [ ] **Step 2: 运行测试，确认模块不存在**
+- [x] **Step 2: 运行测试，确认模块不存在**
 
 Run: `corepack pnpm test:run src/db-api/document-api.test.ts`
 
 Expected: FAIL，提示无法解析 `./document-api`。
 
-- [ ] **Step 3: 实现最小 `DocumentApi`**
+- [x] **Step 3: 实现最小 `DocumentApi`**
 
 ```ts
 export function createDocumentApi(port: Pick<LecApi, 'fileRead'>): DocumentApi {
@@ -366,19 +366,19 @@ export function createDocumentApi(port: Pick<LecApi, 'fileRead'>): DocumentApi {
 - 实现 `toDocumentOpenError(error)`：错误文本含 `ENOENT` 时返回 `document-not-found`；含 `EACCES` 或 `EPERM` 时返回 `permission-denied`；其他情况返回 `document-read-failed`。所有用户文案为固定中文字符串，不拼接原始错误或路径。
 - 文件顶部及 `createDocumentApi`、错误转换函数均添加中文注释，说明这层是 `window.lec` 的唯一访问边界和脱敏原因。
 
-- [ ] **Step 4: 运行数据边界测试**
+- [x] **Step 4: 运行数据边界测试**
 
 Run: `corepack pnpm test:run src/db-api/document-api.test.ts`
 
 Expected: PASS，PDF 不读取 buffer，Foliate 不请求 PDF URL，失败结果没有路径。
 
-- [ ] **Step 5: 运行类型与构建检查**
+- [x] **Step 5: 运行类型与构建检查**
 
 Run: `corepack pnpm typecheck; corepack pnpm build`
 
 Expected: 两个命令均以退出码 0 结束。
 
-- [ ] **Step 6: 更新清单并提交切片**
+- [x] **Step 6: 更新清单并提交切片**
 
 ```bash
 git add src/db-api/document-api.ts src/db-api/document-api.test.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md
