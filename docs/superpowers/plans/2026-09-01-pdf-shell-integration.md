@@ -51,7 +51,7 @@ export type AppRuntime = {
 export function createAppRuntime(port: Pick<LecApi, 'fileRead'>, createTabId?: () => string): AppRuntime
 ```
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```ts
 test('PDF 经 tabStore 打开后，来源只由运行时公开', async () => {
@@ -68,13 +68,13 @@ test('关闭标签后不再公开临时来源', async () => {
 })
 ```
 
-- [ ] **Step 2: 验证失败**
+- [x] **Step 2: 验证失败**
 
 Run: `corepack pnpm test:run src/config/app-runtime.test.ts`
 
 Expected: FAIL，无法解析 `./app-runtime`。
 
-- [ ] **Step 3: 实现最小组合根**
+- [x] **Step 3: 实现最小组合根**
 
 ```ts
 export function createAppRuntime(port: Pick<LecApi, 'fileRead'>, createTabId = () => crypto.randomUUID()): AppRuntime {
@@ -87,7 +87,7 @@ export function createAppRuntime(port: Pick<LecApi, 'fileRead'>, createTabId = (
 
 - 注释说明该模块是唯一组合 preload 的位置；不能创建 React 状态、事件监听器或 EmbedPDF 实例。
 
-- [ ] **Step 4: 验证、审阅并提交**
+- [x] **Step 4: 验证、审阅并提交**
 
 Run: `corepack pnpm test:run src/config/app-runtime.test.ts; corepack pnpm typecheck; git diff --check`
 
