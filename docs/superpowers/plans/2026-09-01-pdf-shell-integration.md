@@ -219,7 +219,7 @@ export function ReaderPage({ session, source }: { session: ReaderSession | undef
 export function ApplicationPage(props: { runtime: AppRuntime; lifecycle: LecApi['lifecycle']; dialogs: LecApi['dialogs'] }): JSX.Element
 ```
 
-- [ ] **Step 1: 写失败的页面组合测试**
+- [x] **Step 1: 写失败的页面组合测试**
 
 ```tsx
 test('已打开 PDF 的应用页面组合标签栏和阅读页', async () => {
@@ -237,13 +237,13 @@ test('ready PDF 会话有 URL 时渲染 EmbedPDF 页面', () => {
 })
 ```
 
-- [ ] **Step 2: 验证失败**
+- [x] **Step 2: 验证失败**
 
 Run: `corepack pnpm test:run src/stores/use-store-selector.test.tsx src/pages/reader-reserved/ReaderPage.test.tsx src/pages/ApplicationPage.test.tsx`
 
 Expected: FAIL，无法解析新增模块。
 
-- [ ] **Step 3: 实现 selector、页面选择与根入口注入**
+- [x] **Step 3: 实现 selector、页面选择与根入口注入**
 
 ```tsx
 const tabs = useStoreSelector(runtime.tabStore, (state) => state.tabs)
@@ -256,7 +256,7 @@ useEffect(() => bindOpenFileRequests(lifecycle.onOpenFileRequest, runtime.tabSto
 - 订阅 effect 返回取消订阅函数；开始页调用 `openDocumentsFromDialog(dialogs.openDocuments, tabStore.openDocument)`。
 - `main.tsx` 创建一次运行时并注入 props；只有 `main.tsx` 有 `window.lec`。删除旧单体模块，将有效断言迁至新测试，并在总清单勾选已交付的 App 拆分、标签能力和开始页打开按钮。
 
-- [ ] **Step 4: 完整验证、审阅并提交**
+- [x] **Step 4: 完整验证、审阅并提交**
 
 Run: `rg -n "window\\.lec" src/components src/pages; corepack pnpm test:run; corepack pnpm typecheck; corepack pnpm build; git diff --check`
 
