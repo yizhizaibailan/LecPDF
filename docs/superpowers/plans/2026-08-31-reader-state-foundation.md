@@ -408,7 +408,7 @@ export type DocumentSessionRegistry = {
 export function createDocumentSessionRegistry(api: DocumentApi): DocumentSessionRegistry
 ```
 
-- [ ] **Step 1: 写失败的资源注册表测试**
+- [x] **Step 1: 写失败的资源注册表测试**
 
 ```ts
 test('来源资源不写入 Store，而是按标签由注册表持有并可释放', async () => {
@@ -423,13 +423,13 @@ test('来源资源不写入 Store，而是按标签由注册表持有并可释�
 })
 ```
 
-- [ ] **Step 2: 运行测试，确认注册表尚未实现**
+- [x] **Step 2: 运行测试，确认注册表尚未实现**
 
 Run: `corepack pnpm test:run src/data/document-session.test.ts`
 
 Expected: FAIL，提示无法解析 `./document-session`。
 
-- [ ] **Step 3: 实现最小资源注册表**
+- [x] **Step 3: 实现最小资源注册表**
 
 ```ts
 export function createDocumentSessionRegistry(api: DocumentApi): DocumentSessionRegistry {
@@ -451,19 +451,19 @@ export function createDocumentSessionRegistry(api: DocumentApi): DocumentSession
 - 注册表只管理来源引用；EmbedPDF 和 foliate-js 的对象 URL、订阅与实例由各自适配器拥有，并通过后续接入时沿用 `close(tabId)` 的关闭边界释放。
 - 添加中文注释，说明 `Map` 不属于 React 状态、不得由组件直接读取，以及关闭标签必须同步清理来源。
 
-- [ ] **Step 4: 运行注册表测试**
+- [x] **Step 4: 运行注册表测试**
 
 Run: `corepack pnpm test:run src/data/document-session.test.ts`
 
 Expected: PASS，成功来源可按标签取得，关闭和清空后均无法再取得。
 
-- [ ] **Step 5: 运行类型与构建检查**
+- [x] **Step 5: 运行类型与构建检查**
 
 Run: `corepack pnpm typecheck; corepack pnpm build`
 
 Expected: 两个命令均以退出码 0 结束。
 
-- [ ] **Step 6: 更新清单并提交切片**
+- [x] **Step 6: 更新清单并提交切片**
 
 ```bash
 git add src/data/document-session.ts src/data/document-session.test.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md
