@@ -109,7 +109,7 @@ export function PdfNavigationSidebar({ registry }: { registry: PluginRegistry | 
 export function PdfReaderPage({ url }: { url: string }): JSX.Element
 ```
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```tsx
 test('PDF 页面组合阅读视图、工具栏和侧栏', () => {
@@ -123,13 +123,13 @@ test('缺少 registry 时工具按钮禁用', () => {
 })
 ```
 
-- [ ] **Step 2: 验证失败**
+- [x] **Step 2: 验证失败**
 
 Run: `corepack pnpm test:run src/components/Reader/PdfToolbar.test.tsx src/components/Reader/PdfSearchBar.test.tsx src/components/Reader/PdfNavigationSidebar.test.tsx src/pages/reader-reserved/PdfReaderPage.test.tsx`
 
 Expected: FAIL，无法解析新增组件和页面。
 
-- [ ] **Step 3: 分职责迁移旧 App 的 PDF 控件**
+- [x] **Step 3: 分职责迁移旧 App 的 PDF 控件**
 
 ```tsx
 export function PdfReaderPage({ url }: { url: string }): JSX.Element {
@@ -143,7 +143,7 @@ export function PdfReaderPage({ url }: { url: string }): JSX.Element {
 - 缩略图对象 URL、EmbedPDF 订阅和 `Ctrl+F` 监听必须由 effect cleanup 释放；registry 只为页面局部状态。
 - 页面只接收 URL；组件不得导入 Store、`window.lec`、`db-api` 或 `document-session`。
 
-- [ ] **Step 4: 验证、审阅并提交**
+- [x] **Step 4: 验证、审阅并提交**
 
 Run: `corepack pnpm test:run src/components/Reader/PdfToolbar.test.tsx src/components/Reader/PdfSearchBar.test.tsx src/components/Reader/PdfNavigationSidebar.test.tsx src/pages/reader-reserved/PdfReaderPage.test.tsx; rg -n "window\\.lec|db-api|document-session" src/components/Reader src/pages/reader-reserved; corepack pnpm typecheck`
 
