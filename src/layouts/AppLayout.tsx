@@ -44,12 +44,13 @@ export function WindowTitlebar(): JSX.Element {
 }
 
 /**
- * 提供所有页面共用的窗口外壳；页面把自己的 main 内容作为 children 传入，从而避免重复标题栏实现。
+ * 提供所有页面共用的窗口外壳；页面把自己的标签插槽和 main 内容传入，从而避免重复标题栏实现。
  */
-export function AppLayout({ children }: { children: ReactNode }): JSX.Element {
+export function AppLayout({ children, tabs }: { children: ReactNode; tabs?: ReactNode }): JSX.Element {
   return (
     <div className="app-frame">
       <WindowTitlebar />
+      {tabs === undefined ? null : <div className="app-frame__tabs">{tabs}</div>}
       {children}
     </div>
   )

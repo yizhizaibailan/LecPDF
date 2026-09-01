@@ -166,7 +166,7 @@ export function HomePage({ onOpenDocuments }: { onOpenDocuments(): Promise<void>
 export async function openDocumentsFromDialog(selectPaths: LecApi['dialogs']['openDocuments'], openDocument: (path: string) => Promise<string | null>): Promise<void>
 ```
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```tsx
 test('开始页不可关闭，文档标签可关闭', () => {
@@ -181,13 +181,13 @@ test('选择器中的全部路径复用标签打开动作', async () => {
 })
 ```
 
-- [ ] **Step 2: 验证失败**
+- [x] **Step 2: 验证失败**
 
 Run: `corepack pnpm test:run src/components/TabBar/DocumentTabs.test.tsx src/pages/home/HomePage.test.tsx src/router/open-documents.test.ts`
 
 Expected: FAIL，无法解析模块。
 
-- [ ] **Step 3: 实现纯展示 UI 和无 UI 桥接**
+- [x] **Step 3: 实现纯展示 UI 和无 UI 桥接**
 
 ```ts
 export async function openDocumentsFromDialog(selectPaths, openDocument): Promise<void> {
@@ -198,7 +198,7 @@ export async function openDocumentsFromDialog(selectPaths, openDocument): Promis
 - 标签只派发激活/关闭意图，开始页不显示关闭按钮；`HomePage` 的按钮执行 `void onOpenDocuments()`，不读 Electron。
 - `AppLayout` 加可选标签插槽，标签溢出横向滚动，保持原型的浅色 slate/blue 标题栏。
 
-- [ ] **Step 4: 验证、审阅并提交**
+- [x] **Step 4: 验证、审阅并提交**
 
 Run: `corepack pnpm test:run src/components/TabBar/DocumentTabs.test.tsx src/pages/home/HomePage.test.tsx src/router/open-documents.test.ts; corepack pnpm typecheck; git diff --check`
 
