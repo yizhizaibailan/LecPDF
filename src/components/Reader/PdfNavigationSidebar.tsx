@@ -33,13 +33,16 @@ function OutlineTree({ items, depth, activePath, parentPath, onJump }: { items: 
 function ThumbnailPreview({ item, registry, onJump }: { item: ThumbnailItem; registry: PluginRegistry; onJump(pageNumber: number): void }): JSX.Element {
   const [url, setUrl] = useState<string | null>(null)
   useEffect(() => {
+    let disposed = false
     let objectUrl: string | null = null
     const service = registry.getPlugin<ThumbnailPlugin>(ThumbnailPlugin.id)?.provides()
     if (service === undefined) return
     void service.renderThumb(item.pageIndex, window.devicePixelRatio || 1).toPromise().then((blob) => {
-      objectUrl = URL.createObjectURL(blob); setUrl(objectUrl)
-    }).catch(() => setUrl(null))
-    return () => { if (objectUrl !== null) URL.revokeObjectURL(objectUrl) }
+      const nextObjectUrl = URL.createObjectURL(blob)
+      if (disposed) { URL.revokeObjectURL(nextObjectUrl); return }
+      objectUrl = nextObjectUrl; setUrl(objectUrl)
+    }).catch(() => { if (!disposed) setUrl(null) })
+    return () => { disposed = true; if (objectUrl !== null) URL.revokeObjectURL(objectUrl) }
   }, [item.pageIndex, registry])
   return <button type="button" className="reader-thumbnail" style={{ height: `${item.height + item.labelHeight + (item.padding ?? 0) * 2}px`, top: `${item.top}px` }} onClick={() => onJump(item.pageIndex + 1)}>{url === null ? <span className="reader-thumbnail__placeholder">加载中…</span> : <img src={url} alt={`第 ${item.pageIndex + 1} 页缩略图`} />}<span>{item.pageIndex + 1}</span></button>
 }
