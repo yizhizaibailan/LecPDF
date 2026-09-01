@@ -498,7 +498,7 @@ export type ReaderStoreDependencies = {
 export function createReaderStore(deps: ReaderStoreDependencies): StoreApi<ReaderStore>
 ```
 
-- [ ] **Step 1: 写失败的 Store 状态与竞态测试**
+- [x] **Step 1: 写失败的 Store 状态与竞态测试**
 
 ```ts
 function createDeferred<T>() {
@@ -528,13 +528,13 @@ test('关闭会话同时移除状态并释放注册表资源', () => {
 })
 ```
 
-- [ ] **Step 2: 运行测试，确认 Store 尚未实现**
+- [x] **Step 2: 运行测试，确认 Store 尚未实现**
 
 Run: `corepack pnpm test:run src/stores/reader-store.test.ts`
 
 Expected: FAIL，提示无法解析 `./reader-store`。
 
-- [ ] **Step 3: 实现最小 Store 和请求编号守卫**
+- [x] **Step 3: 实现最小 Store 和请求编号守卫**
 
 ```ts
 async openSession(tabId, path) {
@@ -554,19 +554,19 @@ async openSession(tabId, path) {
 - `updateLocation` 只更新已存在会话；未知 `tabId` 不创建隐式会话。
 - 所有 Store Action、请求编号判断和关闭时调用 `registry.close` 的原因均写中文注释。
 
-- [ ] **Step 4: 运行 Store 测试**
+- [x] **Step 4: 运行 Store 测试**
 
 Run: `corepack pnpm test:run src/stores/reader-store.test.ts`
 
 Expected: PASS，错误会重置、旧请求被忽略、关闭会释放资源、位置只更新目标标签。
 
-- [ ] **Step 5: 运行全量质量门禁**
+- [x] **Step 5: 运行全量质量门禁**
 
 Run: `corepack pnpm test:run; corepack pnpm typecheck; corepack pnpm build`
 
 Expected: 全部通过，且没有 TypeScript 错误。
 
-- [ ] **Step 6: 更新清单并提交切片**
+- [x] **Step 6: 更新清单并提交切片**
 
 ```bash
 git add src/stores/reader-store.ts src/stores/reader-store.test.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md
