@@ -214,7 +214,7 @@ export function resolveDocumentRoute(path: string): DocumentRoute
 
 - `resolveDocumentRoute` 的失败结果不得包含绝对路径；展示标题只取路径末段文件名。
 
-- [ ] **Step 1: 写失败的格式路由测试**
+- [x] **Step 1: 写失败的格式路由测试**
 
 ```ts
 import { expect, test } from 'vitest'
@@ -241,13 +241,13 @@ test('未知格式不泄露本机绝对路径', () => {
 })
 ```
 
-- [ ] **Step 2: 运行测试，确认新路由模块尚未实现**
+- [x] **Step 2: 运行测试，确认新路由模块尚未实现**
 
 Run: `corepack pnpm test:run src/router/document-router.test.ts`
 
 Expected: FAIL，提示无法解析 `./document-router`。
 
-- [ ] **Step 3: 实现最小类型、路由和声明迁移**
+- [x] **Step 3: 实现最小类型、路由和声明迁移**
 
 ```ts
 // src/router/document-router.ts
@@ -270,19 +270,19 @@ export function resolveDocumentRoute(path: string): DocumentRoute {
 - 将 `electron/types/window.d.ts` 原样迁至 `src/types/window.d.ts`，并将 `tsconfig.web.json` 的 include 从 `electron/types/**/*.d.ts` 改为 `src/types/**/*.d.ts`。
 - 为每个新文件和导出项添加中文注释，特别说明未知格式错误不带路径的隐私原因。
 
-- [ ] **Step 4: 运行路由与格式回归测试**
+- [x] **Step 4: 运行路由与格式回归测试**
 
 Run: `corepack pnpm test:run src/router/document-router.test.ts src/config/reader-formats.test.ts`
 
 Expected: PASS，PDF 返回 `pdf`，EPUB 返回 `foliate`，未知格式没有路径。
 
-- [ ] **Step 5: 运行类型与构建检查**
+- [x] **Step 5: 运行类型与构建检查**
 
 Run: `corepack pnpm typecheck; corepack pnpm build`
 
 Expected: 两个命令均以退出码 0 结束。
 
-- [ ] **Step 6: 更新清单并提交切片**
+- [x] **Step 6: 更新清单并提交切片**
 
 ```bash
 git add src/types src/router/document-router.ts src/router/document-router.test.ts src/config/reader-formats.ts src/config/reader-formats.test.ts tsconfig.web.json electron/types/window.d.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md

@@ -1,8 +1,10 @@
+import type { DocumentKind } from '../types/document'
+
 /**
  * 集中声明当前已验证的文档扩展名与阅读内核映射。
  * 通过先规范化扩展名再返回固定内核类型，路由层可以避免把 EPUB 等电子书交给 EmbedPDF。
  */
-export type ReaderKind = 'pdf' | 'foliate'
+export type ReaderKind = DocumentKind
 
 const READER_KIND_BY_EXTENSION: Readonly<Record<string, ReaderKind>> = {
   '.pdf': 'pdf',

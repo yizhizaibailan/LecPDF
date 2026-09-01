@@ -1,4 +1,4 @@
-import type { LecApi } from '../shared/ipc'
+import type { LecApi } from '../../electron/shared/ipc'
 
 /**
  * 声明渲染页面可见的唯一 Electron 桥接对象。
