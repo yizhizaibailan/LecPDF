@@ -609,7 +609,7 @@ export function bindOpenFileRequests(
 ): Unsubscribe
 ```
 
-- [ ] **Step 1: 写失败的标签与系统打开事件测试**
+- [x] **Step 1: 写失败的标签与系统打开事件测试**
 
 ```ts
 test('开始页常驻、文档标签最多二十个，并将新标签交给阅读 Store', async () => {
@@ -635,13 +635,13 @@ test('系统文件打开事件只转发到标签 Action，并返回取消订阅�
 })
 ```
 
-- [ ] **Step 2: 运行测试，确认协调模块尚未实现**
+- [x] **Step 2: 运行测试，确认协调模块尚未实现**
 
 Run: `corepack pnpm test:run src/stores/tab-store.test.ts src/router/index.test.ts`
 
 Expected: FAIL，提示无法解析 `./tab-store` 或 `./index`。
 
-- [ ] **Step 3: 实现最小标签 Store 与生命周期桥接**
+- [x] **Step 3: 实现最小标签 Store 与生命周期桥接**
 
 ```ts
 export function bindOpenFileRequests(subscribe, openDocument) {
@@ -661,19 +661,19 @@ async openDocument(path) {
 - `src/router/index.ts` 只负责把生命周期回调转为 `openDocument` 调用；不导入 React、组件或阅读器适配器。
 - 为标签上限、常驻开始页、异步 `void` 调用与取消订阅边界补充中文注释。
 
-- [ ] **Step 4: 运行标签和路由桥接测试**
+- [x] **Step 4: 运行标签和路由桥接测试**
 
 Run: `corepack pnpm test:run src/stores/tab-store.test.ts src/router/index.test.ts`
 
 Expected: PASS，开始页不可关闭、超过 20 个文档标签返回 `null`、外部文件事件只触发一次打开动作。
 
-- [ ] **Step 5: 运行全量质量门禁和架构依赖检查**
+- [x] **Step 5: 运行全量质量门禁和架构依赖检查**
 
-Run: `rg -n "window\\.lec|@embedpdf|foliate-js" src/components src/pages; corepack pnpm test:run; corepack pnpm typecheck; corepack pnpm build; git diff --check`
+Run: `if (Test-Path src/components) { rg -n "window\\.lec|@embedpdf|foliate-js" src/components }; if (Test-Path src/pages) { rg -n "window\\.lec|@embedpdf|foliate-js" src/pages }; corepack pnpm test:run; corepack pnpm typecheck; corepack pnpm build; git diff --check`
 
-Expected: 第一条命令没有匹配结果；其余命令均以退出码 0 结束。
+Expected: 已存在的组件或页面目录没有匹配结果；页面迁移前 `src/pages` 不存在时跳过该目录；其余命令均以退出码 0 结束。
 
-- [ ] **Step 6: 更新清单并提交切片**
+- [x] **Step 6: 更新清单并提交切片**
 
 ```bash
 git add src/stores/tab-store.ts src/stores/tab-store.test.ts src/router/index.ts src/router/index.test.ts docs/superpowers/plans/2026-08-31-reader-state-foundation.md
