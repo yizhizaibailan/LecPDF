@@ -19,6 +19,7 @@ export type TabStore = {
   openDocument(path: string): Promise<string | null>
   activateTab(tabId: string): void
   closeTab(tabId: string): void
+  closeActiveTab(): void
 }
 
 /** 表示标签协调所需的阅读状态边界和标签编号来源，便于测试且避免耦合到 UI。 */
@@ -55,6 +56,13 @@ export function createTabStore(dependencies: TabStoreDependencies): StoreApi<Tab
       // 先释放该标签的临时文档资源，再删除 UI 标签，避免资源脱离可追踪的生命周期。
       dependencies.reader.closeSession(tabId)
       set((state) => removeTabAndSelectFallback(state, tabId))
+    },
+    /**
+     * 关闭当前标签，供全局快捷键等没有具体标签编号的交互入口复用。
+     * 具体的开始页保护仍统一交由 closeTab 判断，避免每个调用方重复实现同一规则。
+     */
+    closeActiveTab() {
+      get().closeTab(get().activeTabId)
     }
   }))
 }

@@ -84,3 +84,21 @@ test('激活未知标签和关闭非当前标签不会改变当前选择', async
   expect(reader.closeSession).toHaveBeenCalledWith('tab-1')
   expect(store.getState().activeTabId).toBe('tab-2')
 })
+
+/** 验证快捷键关闭只针对当前文档标签，并保留不可关闭的开始页。 */
+test('关闭当前标签时释放会话，开始页为当前标签时保持不变', async () => {
+  const reader = { openSession: vi.fn().mockResolvedValue(undefined), closeSession: vi.fn() }
+  const store = createTabStore({ reader, createTabId: createTabIdFactory() })
+
+  await store.getState().openDocument('C:\\Books\\guide.pdf')
+  store.getState().closeActiveTab()
+
+  expect(reader.closeSession).toHaveBeenCalledWith('tab-1')
+  expect(store.getState()).toMatchObject({ activeTabId: 'home' })
+  expect(store.getState().tabs.map((tab) => tab.id)).toEqual(['home'])
+
+  store.getState().closeActiveTab()
+
+  expect(reader.closeSession).toHaveBeenCalledTimes(1)
+  expect(store.getState().tabs.map((tab) => tab.id)).toEqual(['home'])
+})
