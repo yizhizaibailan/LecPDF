@@ -8,6 +8,7 @@ import type { AppRuntime } from '../config/app-runtime'
 import { DocumentTabs } from '../components/TabBar/DocumentTabs'
 import { AppLayout } from '../layouts/AppLayout'
 import { openDocumentsFromDialog } from '../router/open-documents'
+import { bindCloseActiveTabShortcut } from '../router/tab-shortcuts'
 import { useStoreSelector } from '../stores/use-store-selector'
 import { HomePage } from './home/HomePage'
 import { ReaderPage } from './reader-reserved/ReaderPage'
@@ -32,6 +33,11 @@ export function ApplicationPage({ runtime, lifecycle, dialogs }: ApplicationPage
   useEffect(
     () => bindOpenFileRequests(lifecycle.onOpenFileRequest, runtime.tabStore.getState().openDocument),
     [lifecycle, runtime]
+  )
+
+  useEffect(
+    () => bindCloseActiveTabShortcut(window, runtime.tabStore.getState().closeActiveTab),
+    [runtime]
   )
 
   const tabStore = runtime.tabStore.getState()

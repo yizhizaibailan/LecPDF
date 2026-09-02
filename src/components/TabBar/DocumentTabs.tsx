@@ -3,6 +3,7 @@
  * 组件仅向上派发激活和关闭意图，不保存标签选择状态，确保 Store 仍是唯一状态来源。
  */
 import type { ReaderTab } from '../../types/document'
+import { closeTabOnMiddleClick } from './tab-interactions'
 
 /** 表示文档标签栏由上层提供的渲染数据和操作意图。 */
 export type DocumentTabsProps = {
@@ -21,7 +22,13 @@ export function DocumentTabs({ tabs, activeTabId, onActivate, onClose }: Documen
     <nav className="document-tabs" aria-label="文档标签">
       <div className="document-tabs__list" role="tablist">
         {tabs.map((tab) => (
-          <div key={tab.id} className={`document-tabs__item${tab.id === activeTabId ? ' document-tabs__item--active' : ''}`}>
+          <div
+            key={tab.id}
+            className={`document-tabs__item${tab.id === activeTabId ? ' document-tabs__item--active' : ''}`}
+            onAuxClick={(event) => {
+              if (closeTabOnMiddleClick(event.button, tab, onClose)) event.preventDefault()
+            }}
+          >
             <button
               type="button"
               className="document-tabs__activate"
