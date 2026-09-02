@@ -1,0 +1,44 @@
+{
+  "name": "lecpdf",
+  "version": "0.1.0",
+  "description": "本地优先的 PDF 与 EPUB 阅读器",
+  "private": true,
+  "type": "module",
+  "main": "./out/main/index.js",
+  "packageManager": "pnpm@10.17.1",
+  "scripts": {
+    "dev": "electron-vite dev --config electron.vite.config.ts",
+    "build": "electron-vite build --config electron.vite.config.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --build"
+  },
+  "dependencies": {
+    "@ant-design/icons": "5.6.1",
+    "@embedpdf/models": "2.15.0",
+    "@embedpdf/react-pdf-viewer": "2.15.0",
+    "@iconify-icons/solar": "2.0.1",
+    "@iconify/react": "6.0.2",
+    "antd": "5.27.0",
+    "archiver": "8.0.0",
+    "electron-log": "5.4.4",
+    "electron-updater": "6.8.9",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "yauzl": "3.4.0",
+    "zustand": "5.0.8"
+  },
+  "devDependencies": {
+    "@types/archiver": "8.0.0",
+    "@types/node": "24.3.0",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@types/yauzl": "2.10.0",
+    "@vitejs/plugin-react": "5.0.4",
+    "electron": "44.0.0",
+    "electron-vite": "5.0.0",
+    "typescript": "5.9.2",
+    "vite": "7.2.4",
+    "vitest": "4.1.10"
+  }
+}

@@ -72,42 +72,42 @@
 ### LEC-002 antd 主题 token 与设计规范落地 · AFK
 **What to build**：ConfigProvider 主题 token（附录 A.6：`colorPrimary #1677ff`、`colorBgLayout #e8edf4`、`colorText #1e293b`、`colorBorder #e2e8f0`、`borderRadius 8`）；iconify `solar:` 图标集接入；设计规范附录 A 作为 UI 开发基准文档引用。
 **Acceptance criteria**
-- [ ] 主题 token 全应用生效，与附录 A 色板一致
-- [ ] solar 图标可按名引用渲染
-- [ ] 提供一个空态页面验证背景/文字/边框三色
+- [x] 主题 token 全应用生效，与附录 A 色板一致
+- [x] solar 图标可按名引用渲染
+- [x] 提供一个空态页面验证背景/文字/边框三色
 **Blocked by**：LEC-001
 
 ### LEC-003 shared 磁盘 schema 类型 · AFK
 **What to build**：`shared/` 落地五个磁盘结构类型——`Config`（settings 5 组 + shortcuts + window）、`Library`（recent/starred/folders/files）、`Sidecar`（`UnifiedAnnotation` 七类判别联合 + bookmarks + progress + epubSettings + tts）、`RuntimeMark`、`BackupManifest`，全部带 `version` 字段。
 **Acceptance criteria**
-- [ ] 类型与 ARCH §6.1–6.5 JSON 示例一一对应
-- [ ] 七类批注判别联合（文本标记 quad / note point / freeText rect / ink paths）
-- [ ] tsc 干净；导出被 T0.3/后续任务直接复用
+- [x] 类型与 ARCH §6.1–6.5 JSON 示例一一对应
+- [x] 七类批注判别联合（文本标记 quad / note point / freeText rect / ink paths）
+- [x] tsc 干净；导出被 T0.3/后续任务直接复用
 **Blocked by**：LEC-001
 
 ### LEC-004 IPC 契约与 window.lec 声明 · AFK
 **What to build**：`shared/ipc.ts` 定义 window/dialogs/fs/library/fileRead/data/backup/update/lifecycle 全量接口；渲染侧 `env.d.ts` 声明 `window.lec`；preload 骨架暴露占位实现。
 **Acceptance criteria**
-- [ ] 接口面与 ARCH §3 IPC 表一致
-- [ ] 渲染层可经类型安全方式调用全部通道
-- [ ] tsc 干净
+- [x] 接口面与 ARCH §3 IPC 表一致
+- [x] 渲染层可经类型安全方式调用全部通道
+- [x] tsc 干净
 **Blocked by**：LEC-003
 
 ### LEC-005 DataStoreSvc 原子读写 · AFK
 **What to build**：主进程 `dataStore.ts`：userData 路径解析、`readJson/writeJson`（临时文件+rename、读写互斥、失败清理）。
 **Acceptance criteria**
-- [ ] 并发写不产生半截文件
-- [ ] 写失败后临时文件被清理
-- [ ] 损坏 JSON 读取返回明确错误而非崩溃
-- [ ] vitest 覆盖原子写/损坏/互斥用例
+- [x] 并发写不产生半截文件
+- [x] 写失败后临时文件被清理
+- [x] 损坏 JSON 读取返回明确错误而非崩溃
+- [x] vitest 覆盖原子写/损坏/互斥用例
 **Blocked by**：LEC-004
 
 ### LEC-006 schema 迁移框架 · AFK
 **What to build**：逐版本迁移器（按 `version` 链式升级）；未知高版本进入只读保护（拒绝覆盖用户数据）。
 **Acceptance criteria**
-- [ ] v0→v1 迁移链单测 PASS
-- [ ] 未知高版本（如 v99）打开时只读保护并提示
-- [ ] 迁移失败保留原文件
+- [x] v0→v1 迁移链单测 PASS
+- [x] 未知高版本（如 v99）打开时只读保护并提示
+- [x] 迁移失败保留原文件
 **Blocked by**：LEC-005
 
 ---
@@ -117,39 +117,39 @@
 ### LEC-007 WindowManager frameless 窗口与三键 · AFK
 **What to build**：frameless 窗口创建；`window.minimize/maximize/close` + `onMaximizedChange` IPC；标题栏拖拽区。
 **Acceptance criteria**
-- [ ] 窗口三键可用且状态同步（最大化图标切换）
-- [ ] 拖拽标题栏可移动窗口
-- [ ] 双击标题栏切换最大化
+- [x] 窗口三键可用且状态同步（最大化图标切换）
+- [x] 拖拽标题栏可移动窗口
+- [x] 双击标题栏切换最大化
 **Blocked by**：LEC-004
 
 ### LEC-008 窗口几何记忆 · AFK
 **What to build**：关闭时保存 bounds/maximized 到 config；启动还原；越界（显示器拔出）回退主屏中央。
 **Acceptance criteria**
-- [ ] 重启后位置/尺寸/最大化状态还原
-- [ ] 人为写入越界坐标后启动回退到可见区域
-- [ ] 单测覆盖越界回退
+- [x] 重启后位置/尺寸/最大化状态还原
+- [x] 人为写入越界坐标后启动回退到可见区域
+- [x] 单测覆盖越界回退
 **Blocked by**：LEC-007、LEC-005
 
 ### LEC-009 SingleInstance 单实例与文件路由 · AFK
 **What to build**：单实例锁；二次启动捕获命令行文件路径 → `lifecycle.onOpenFileRequest` 下发；首启时延迟到窗口就绪再下发。
 **Acceptance criteria**
-- [ ] 双开时第二个实例退出且文件在首个窗口路由成功
-- [ ] 首启带文件参数打开正确
+- [x] 双开时第二个实例退出且文件在首个窗口路由成功
+- [x] 首启带文件参数打开正确
 **Blocked by**：LEC-007
 
 ### LEC-010 ProtocolSvc lec-file:// 流式读取 · AFK
 **What to build**：注册 `lec-file://` 协议，按 Range 流式读取本地 PDF；路径校验防止任意文件读取。
 **Acceptance criteria**
-- [ ] 200MB 测试 PDF 流式读取正常，支持 Range 请求
-- [ ] 非法路径被拒绝
-- [ ] 渲染层可直接以 URL 打开
+- [x] 200MB 测试 PDF 流式读取正常，支持 Range 请求
+- [x] 非法路径被拒绝
+- [x] 渲染层可直接以 URL 打开
 **Blocked by**：LEC-004
 
 ### LEC-011 LibrarySvc 目录扫描 · AFK
 **What to build**：`scanFolders(paths[])` → `FileIndexEntry[]`（readdir+stat，仅 .pdf/.epub，不解析内容）。
 **Acceptance criteria**
-- [ ] 混合目录扫描返回正确元数据（名称/大小/mtime/kind）
-- [ ] 子目录递归；大目录不阻塞主进程
+- [x] 混合目录扫描返回正确元数据（名称/大小/mtime/kind）
+- [x] 子目录递归；大目录不阻塞主进程
 **Blocked by**：LEC-004
 
 ### LEC-012 CrashMarker 崩溃标记 · AFK
