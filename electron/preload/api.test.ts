@@ -1,5 +1,11 @@
+/**
+ * 职责：验证 preload 只暴露固定 IPC 能力，并校验主进程返回值。
+ * 异步说明：测试等待每次 invoke 与订阅回调完成，不启动真实 Electron 进程。
+ * 安全说明：渲染层不能指定任意通道，畸形返回值会在桥接边界被拒绝。
+ * 资源说明：内存监听器会在测试中显式取消，不遗留真实 IPC 订阅。
+ */
 import { expect, test } from 'vitest'
-import { BACKUP_IPC_CHANNELS, FILE_READ_IPC_CHANNELS, LIBRARY_IPC_CHANNELS, LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../shared/ipc'
+import { BACKUP_IPC_CHANNELS, DIALOG_IPC_CHANNELS, FILE_READ_IPC_CHANNELS, LIBRARY_IPC_CHANNELS, LIFECYCLE_IPC_CHANNELS, WINDOW_IPC_CHANNELS } from '../shared/ipc'
 import { createPreloadApi, type IpcRendererPort } from './api'
 
 test('exposes a frozen, fail-closed IPC placeholder API', async () => {
@@ -48,6 +54,33 @@ test('forwards window controls and removes the maximize subscription when reques
     WINDOW_IPC_CHANNELS.close
   ])
   expect(observedStates).toEqual([true])
+})
+
+test('通过固定对话框通道返回主进程选择的文档路径', async () => {
+  const invocations: Array<{ channel: string; arguments_: unknown[] }> = []
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async (channel, ...arguments_) => {
+      invocations.push({ channel, arguments_ })
+      return ['C:\\books\\a.pdf', 'C:\\books\\b.epub']
+    },
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+
+  await expect(api.dialogs.openDocuments()).resolves.toEqual(['C:\\books\\a.pdf', 'C:\\books\\b.epub'])
+  expect(invocations).toEqual([{ channel: DIALOG_IPC_CHANNELS.openDocuments, arguments_: [] }])
+})
+
+test('拒绝打开文档 IPC 返回的非字符串路径', async () => {
+  const ipcRenderer: IpcRendererPort = {
+    invoke: async () => ['C:\\books\\a.pdf', 42],
+    on: () => undefined,
+    removeListener: () => undefined
+  }
+  const api = createPreloadApi('0.1.0', ipcRenderer)
+
+  await expect(api.dialogs.openDocuments()).rejects.toThrow('主进程未返回有效文档路径')
 })
 
 test('buffers early file-open requests until the renderer subscribes and supports unsubscription', () => {

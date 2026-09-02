@@ -1,10 +1,13 @@
 /**
- * 职责：验证通用阅读页按会话与临时来源展示加载、错误、PDF 和 EPUB 状态。
- * 异步说明：这里使用静态渲染固定会话快照，不会创建阅读器订阅或临时资源。
+ * 职责：验证通用阅读页按会话与临时来源展示状态，并以标签身份隔离 PDF 阅读器实例。
+ * 异步说明：这里使用静态会话快照，不等待真实阅读器初始化。
+ * 安全说明：测试只传入受限 lec-file URL，不接触本机文件系统或 Electron 能力。
+ * 资源说明：不同 tabId 的 key 契约保证切换标签时回收旧 PDF registry 与订阅。
  */
 import { expect, test } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReaderSession } from '../../types/reader'
+import { PdfReaderPage } from './PdfReaderPage'
 import { ReaderPage } from './ReaderPage'
 
 const readyPdfSession: ReaderSession = {
@@ -22,6 +25,17 @@ test('ready PDF 会话和 URL 渲染 EmbedPDF 页面', () => {
   const html = renderToStaticMarkup(<ReaderPage session={readyPdfSession} source={{ kind: 'pdf', url: 'lec-file://token' }} />)
 
   expect(html).toContain('aria-label="PDF 阅读视图"')
+})
+
+test('相同路径的不同 PDF 标签使用各自 tabId 作为阅读器 key', () => {
+  const source = { kind: 'pdf' as const, url: 'lec-file://token' }
+  const first = ReaderPage({ session: readyPdfSession, source })
+  const second = ReaderPage({ session: { ...readyPdfSession, tabId: 'tab-2' }, source })
+
+  expect(first.type).toBe(PdfReaderPage)
+  expect(first.key).toBe('tab-1')
+  expect(second.type).toBe(PdfReaderPage)
+  expect(second.key).toBe('tab-2')
 })
 
 test('加载、错误和 Foliate 会话呈现明确状态', () => {

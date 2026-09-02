@@ -1,5 +1,8 @@
 /**
- * 定义渲染层可调用的 IPC 通道和 LecApi 契约；通过只声明白名单方法让 preload 可以安全地桥接到主进程。
+ * 职责：定义渲染层可调用的 IPC 通道和 LecApi 契约。
+ * 异步说明：这里只声明 Promise 边界，不执行主进程任务。
+ * 安全说明：固定通道和只读分组让 preload 只能桥接受限能力。
+ * 资源说明：共享契约不持有 Electron 监听器或本机资源。
  */
 import type { BackupManifest, Config, FileKind, Library, LibraryFile, RuntimeMark, Sidecar } from './schema'
 
@@ -27,6 +30,10 @@ export const WINDOW_IPC_CHANNELS = {
 
 export const LIFECYCLE_IPC_CHANNELS = {
   openFileRequest: 'lec:lifecycle:open-file-request'
+} as const
+
+export const DIALOG_IPC_CHANNELS = {
+  openDocuments: 'lec:dialogs:open-documents'
 } as const
 
 export const FILE_READ_IPC_CHANNELS = {

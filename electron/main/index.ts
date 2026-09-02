@@ -1,5 +1,8 @@
 /**
- * 协调应用生命周期、窗口、协议、IPC、备份和恢复服务；通过主进程集中注册受限服务而不让渲染层直接访问本地资源。
+ * 职责：协调应用生命周期、窗口、协议、IPC、备份和恢复服务。
+ * 异步说明：启动流程按依赖顺序等待持久化服务、协议与主窗口就绪。
+ * 安全说明：系统打开与对话框选择复用同一文档授权入口，渲染层不能授权任意路径。
+ * 资源说明：窗口、备份调度器和崩溃标记由应用生命周期统一创建与释放。
  */
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen } from 'electron'
 import { join } from 'node:path'
@@ -13,6 +16,7 @@ import { CrashMarker } from './crash-marker'
 import { bindCrashMarkerCleanExit, type CrashMarkerLifecycleApp } from './crash-marker-lifecycle'
 import { DataStore } from './dataStore'
 import { registerDataIpcHandlers, type DataIpcMainPort } from './data-ipc'
+import { registerDialogsIpcHandlers, type DialogsIpcMainPort, type OpenDocumentsDialog } from './dialogs-ipc'
 import { registerSidecarIpcHandlers, type SidecarIpcMainPort } from './sidecar-ipc'
 import { FileOpenRouter, getSupportedDocumentPaths, type FileRouteWindow } from './file-open-router'
 import { registerFileReadIpcHandlers, type FileReadIpcMainPort } from './file-read-ipc'
@@ -38,9 +42,13 @@ const openedTabPaths: string[] = []
 let crashMarker: CrashMarker | null = null
 let backupScheduler: BackupScheduler | null = null
 
+function authorizeDocumentPaths(paths: string[]): void {
+  paths.forEach((path) => lecFileProtocol.authorizeDocument(path))
+}
+
 function routeOpenFiles(paths: string[]): void {
   recordOpenedTabPaths(paths)
-  paths.forEach((path) => lecFileProtocol.authorizeDocument(path))
+  authorizeDocumentPaths(paths)
 
   if (activeMainWindow === null) {
     fileOpenRouter.enqueue(paths)
@@ -110,6 +118,11 @@ if (isPrimaryInstance) {
     await crashMarker.start(openedTabPaths)
     bindCrashMarkerCleanExit(app as unknown as CrashMarkerLifecycleApp, crashMarker)
     registerLecFileProtocol(protocol as unknown as LecFileProtocolPort, lecFileProtocol)
+    registerDialogsIpcHandlers(
+      ipcMain as unknown as DialogsIpcMainPort,
+      dialog as unknown as OpenDocumentsDialog,
+      authorizeDocumentPaths
+    )
     registerFileReadIpcHandlers(ipcMain as unknown as FileReadIpcMainPort, lecFileProtocol)
     registerLibraryIpcHandlers(ipcMain as unknown as LibraryIpcMainPort, libraryService)
     registerBackupIpcHandlers(ipcMain as unknown as BackupIpcMainPort, backupService)

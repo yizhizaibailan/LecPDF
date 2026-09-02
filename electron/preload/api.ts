@@ -1,9 +1,13 @@
 /**
- * 把 ipcRenderer 调用封装成按领域分组的 LecApi；通过固定通道名和不可用降级函数避免渲染层获得任意 IPC 能力。
+ * 职责：把 ipcRenderer 调用封装成按领域分组的 LecApi。
+ * 异步说明：每个方法等待固定 IPC invoke，并在返回渲染层前完成边界校验。
+ * 安全说明：固定通道与 fail-closed 降级避免渲染层获得任意 IPC 能力。
+ * 资源说明：生命周期监听器支持取消，其余方法不持有长期资源。
  */
 import {
   BACKUP_IPC_CHANNELS,
   DATA_IPC_CHANNELS,
+  DIALOG_IPC_CHANNELS,
   FILE_READ_IPC_CHANNELS,
   LIBRARY_IPC_CHANNELS,
   SIDECAR_IPC_CHANNELS,
@@ -132,6 +136,28 @@ function createFileReadApi(ipcRenderer?: IpcRendererPort): LecApi['fileRead'] {
   })
 }
 
+function createDialogsApi(ipcRenderer?: IpcRendererPort): LecApi['dialogs'] {
+  if (ipcRenderer === undefined) {
+    return Object.freeze({
+      openDocuments: unavailable<string[]>('dialogs.openDocuments'),
+      openFolder: unavailable<string | null>('dialogs.openFolder'),
+      locateMissingFile: unavailable<string | null>('dialogs.locateMissingFile')
+    })
+  }
+
+  return Object.freeze({
+    openDocuments: async () => {
+      const paths = await ipcRenderer.invoke(DIALOG_IPC_CHANNELS.openDocuments)
+      if (!Array.isArray(paths) || paths.some((path) => typeof path !== 'string')) {
+        throw new Error('主进程未返回有效文档路径')
+      }
+      return paths
+    },
+    openFolder: unavailable<string | null>('dialogs.openFolder'),
+    locateMissingFile: unavailable<string | null>('dialogs.locateMissingFile')
+  })
+}
+
 function createLibraryApi(ipcRenderer?: IpcRendererPort): LecApi['library'] {
   if (ipcRenderer === undefined) {
     return Object.freeze({
@@ -176,11 +202,7 @@ export function createPreloadApi(version: string, ipcRenderer?: IpcRendererPort)
   return Object.freeze({
     app: Object.freeze({ version }),
     window: createWindowApi(ipcRenderer),
-    dialogs: Object.freeze({
-      openDocuments: unavailable<string[]>('dialogs.openDocuments'),
-      openFolder: unavailable<string | null>('dialogs.openFolder'),
-      locateMissingFile: unavailable<string | null>('dialogs.locateMissingFile')
-    }),
+    dialogs: createDialogsApi(ipcRenderer),
     fs: Object.freeze({
       stat: unavailable<FileStat>('fs.stat'),
       trashItem: unavailable<void>('fs.trashItem'),

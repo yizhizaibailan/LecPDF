@@ -1,6 +1,8 @@
 /**
  * 职责：按当前阅读会话和临时来源分发加载、错误、PDF 与 Foliate 占位阅读状态。
- * 资源说明：页面只读取运行时提供的临时来源；实际 PDF 阅读器在卸载时自行释放其 effect 资源。
+ * 异步说明：加载状态由外部 Store 驱动，本组件不发起文件读取任务。
+ * 安全说明：页面只接收受限临时来源，不读取本机路径或 Electron 能力。
+ * 资源说明：PDF 子树以 tabId 标识实例，切换标签时卸载旧 registry 与订阅。
  */
 import type { DocumentSource, ReaderSession } from '../../types/reader'
 import { PdfReaderPage } from './PdfReaderPage'
@@ -20,7 +22,7 @@ export function ReaderPage({ session, source }: ReaderPageProps): JSX.Element {
   if (session.status === 'loading') return <main className="reader-page reader-page--loading" aria-live="polite">正在加载文档…</main>
   if (session.status === 'error') return <main className="reader-page reader-page--error" role="alert">{session.error?.message ?? '无法打开文档'}</main>
 
-  if (session.kind === 'pdf' && source?.kind === 'pdf') return <PdfReaderPage url={source.url} />
+  if (session.kind === 'pdf' && source?.kind === 'pdf') return <PdfReaderPage key={session.tabId} url={source.url} />
   if (session.kind === 'foliate') return <main className="reader-page reader-page--foliate">EPUB 阅读器尚未接入</main>
 
   return <main className="reader-page reader-page--error" role="alert">阅读资源不可用</main>
