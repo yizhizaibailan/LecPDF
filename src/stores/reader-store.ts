@@ -5,7 +5,7 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { DocumentSessionRegistry } from '../data/document-session'
 import { getDocumentTitle, type DocumentRoute } from '../types/document'
-import type { DocumentLoadResult, ReaderLocation, ReaderSession } from '../types/reader'
+import type { DocumentLoadResult, ReaderEvent, ReaderLocation, ReaderSession } from '../types/reader'
 
 /** 表示阅读界面可订阅的会话状态与唯一的状态修改动作。 */
 export type ReaderStore = {
@@ -13,6 +13,7 @@ export type ReaderStore = {
   openSession(tabId: string, path: string): Promise<void>
   closeSession(tabId: string): void
   updateLocation(tabId: string, location: ReaderLocation): void
+  applyEvent(tabId: string, event: ReaderEvent): void
 }
 
 /** 表示创建 Store 时注入的纯路由和临时资源边界，便于测试且避免 Store 直接调用 IPC。 */
@@ -53,6 +54,9 @@ export function createReaderStore(dependencies: ReaderStoreDependencies): StoreA
     },
     updateLocation(tabId, location) {
       set((state) => updateSessionLocation(state, tabId, location))
+    },
+    applyEvent(tabId, event) {
+      set((state) => applyReaderEvent(state, tabId, event))
     }
   }))
 }
@@ -66,6 +70,9 @@ function createLoadingSession(tabId: string, path: string, route: DocumentRoute,
     kind: route.ok ? route.kind : null,
     status: 'loading',
     location: INITIAL_LOCATION,
+    outline: [],
+    search: { query: '', total: 0, activeIndex: -1, searching: false },
+    view: { layout: null, zoom: null },
     error: null,
     requestId
   }
@@ -124,4 +131,32 @@ function updateSessionLocation(state: ReaderStore, tabId: string, location: Read
       [tabId]: { ...session, location }
     }
   }
+}
+
+/**
+ * 将阅读内核事件归约为目标标签的新会话快照。
+ * 未知标签保持原状态，避免迟到事件在已关闭会话上隐式重建状态。
+ */
+function applyReaderEvent(state: ReaderStore, tabId: string, event: ReaderEvent): ReaderStore {
+  const session = state.sessions[tabId]
+  if (session === undefined) return state
+
+  const nextSession = (() => {
+    switch (event.type) {
+      case 'ready':
+        return { ...session, status: 'ready' as const, error: null }
+      case 'location-changed':
+        return { ...session, location: event.location }
+      case 'outline-changed':
+        return { ...session, outline: event.outline }
+      case 'search-changed':
+        return { ...session, search: event.search }
+      case 'view-preferences-changed':
+        return { ...session, view: event.view }
+      case 'load-failed':
+        return { ...session, status: 'error' as const, error: event.error }
+    }
+  })()
+
+  return { ...state, sessions: { ...state.sessions, [tabId]: nextSession } }
 }

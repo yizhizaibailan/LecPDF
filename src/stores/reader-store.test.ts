@@ -108,6 +108,99 @@ test('位置更新只作用于已存在的目标标签', async () => {
   expect(store.getState().sessions['missing-tab']).toBeUndefined()
 })
 
+test('位置变更事件只更新目标标签会话', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+
+  await store.getState().openSession('tab-a', 'C:\\Books\\first.pdf')
+  await store.getState().openSession('tab-b', 'C:\\Books\\second.pdf')
+  store.getState().applyEvent('tab-a', {
+    type: 'location-changed',
+    location: { page: 9, chapter: null, percent: 0.4 }
+  })
+
+  expect(store.getState().sessions['tab-a']?.location.page).toBe(9)
+  expect(store.getState().sessions['tab-b']?.location.page).toBeNull()
+})
+
+test('打开会话为目录、搜索与视图写入稳定初值', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+
+  await store.getState().openSession('tab-1', 'C:\\Books\\guide.pdf')
+
+  expect(store.getState().sessions['tab-1']).toMatchObject({
+    outline: [],
+    search: { query: '', total: 0, activeIndex: -1, searching: false },
+    view: { layout: null, zoom: null }
+  })
+})
+
+test('目录变更事件替换目标标签目录', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+  const outline = [{ id: 'chapter-1', title: '第一章', location: { page: 1, chapter: null, percent: 0 }, children: [] }]
+
+  await store.getState().openSession('tab-1', 'C:\\Books\\guide.pdf')
+  store.getState().applyEvent('tab-1', { type: 'outline-changed', outline })
+
+  expect(store.getState().sessions['tab-1']?.outline).toEqual(outline)
+})
+
+test('搜索变更事件替换目标标签搜索状态', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+  const search = { query: 'LecPDF', total: 3, activeIndex: 1, searching: false }
+
+  await store.getState().openSession('tab-1', 'C:\\Books\\guide.pdf')
+  store.getState().applyEvent('tab-1', { type: 'search-changed', search })
+
+  expect(store.getState().sessions['tab-1']?.search).toEqual(search)
+})
+
+test('视图偏好变更事件替换目标标签视图状态', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+  const view = { layout: 'continuous' as const, zoom: 1.25 }
+
+  await store.getState().openSession('tab-1', 'C:\\Books\\guide.pdf')
+  store.getState().applyEvent('tab-1', { type: 'view-preferences-changed', view })
+
+  expect(store.getState().sessions['tab-1']?.view).toEqual(view)
+})
+
+test('就绪事件恢复可读状态并清除错误', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+  const error = { code: 'document-read-failed' as const, message: '无法读取该文件' }
+
+  await store.getState().openSession('tab-1', 'C:\\Books\\guide.pdf')
+  store.getState().applyEvent('tab-1', { type: 'load-failed', error })
+  store.getState().applyEvent('tab-1', { type: 'ready' })
+
+  expect(store.getState().sessions['tab-1']).toMatchObject({ status: 'ready', error: null })
+})
+
+test('加载失败事件记录错误状态', async () => {
+  const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+  const error = { code: 'document-read-failed' as const, message: '无法读取该文件' }
+
+  await store.getState().openSession('tab-1', 'C:\\Books\\guide.pdf')
+  store.getState().applyEvent('tab-1', { type: 'load-failed', error })
+
+  expect(store.getState().sessions['tab-1']).toMatchObject({ status: 'error', error })
+})
+
+test('未知标签事件不会创建阅读会话', () => {
+  const registry = { open: vi.fn(), close: vi.fn() }
+  const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })
+
+  store.getState().applyEvent('missing-tab', { type: 'ready' })
+
+  expect(store.getState().sessions['missing-tab']).toBeUndefined()
+})
+
 test('关闭会话释放资源和对应状态', async () => {
   const registry = { open: vi.fn().mockResolvedValue({ ok: true, source: pdfSource }), close: vi.fn() }
   const store = createReaderStore({ resolveRoute: vi.fn().mockReturnValue(pdfRoute), registry })

@@ -17,6 +17,9 @@ const readyPdfSession: ReaderSession = {
   kind: 'pdf',
   status: 'ready',
   location: { page: null, chapter: null, percent: 0 },
+  outline: [],
+  search: { query: '', total: 0, activeIndex: -1, searching: false },
+  view: { layout: null, zoom: null },
   error: null,
   requestId: 1
 }
