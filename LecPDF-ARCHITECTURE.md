@@ -122,9 +122,9 @@ EmbedPDF 事件 → PDF 适配端口 → 标准状态 → 受控组件重渲染
 
 ### 2.2 统一阅读会话与受控引擎边界（2026-09-03）
 
-`ReaderEvent → readerStore.applyEvent → selector UI` 是阅读状态的唯一闭环：PDF 运行时把内核页码、目录等变化转换为 `ReaderEvent`，`ApplicationPage` 将事件交给目标标签的 `readerStore.applyEvent`，页面与侧栏再通过 selector 读取同一份可序列化会话快照。事件不会把 EmbedPDF 类型、DOM 引用或引擎实例泄露给组件、页面或 Store。
+PDF 运行时已将内核页码、目录等变化转换为 `ReaderEvent`，并经 `ApplicationPage` 回写目标标签的 `readerStore.applyEvent`。这为后续 selector 驱动的 UI 提供可序列化会话快照，但尚不是完整的唯一 UI 闭环：当前工具栏与侧栏仍直接使用 PDF 运行时控制器；将这些视图改为 selector 驱动是后续架构工作。事件不会把 EmbedPDF 类型、DOM 引用或引擎实例泄露给组件、页面或 Store。
 
-`DocumentSessionRegistry` 只拥有短生命周期资源：打开期间的文件字节、`lec-file://` 来源、对象 URL（如有）、内核实例及取消订阅函数。标签关闭或异步打开结果失效时，注册表负责释放这些资源；Zustand 只保存 `ReaderSession` 的状态、位置、目录、搜索、视图偏好和错误，绝不保存上述资源。
+`DocumentSessionRegistry` 只保存短生命周期的 `DocumentSource` 与活动请求号：PDF 的 `lec-file://` 来源或 Foliate 的文件字节不会进入 Zustand，关闭标签或异步结果失效时会从注册表移除。`lec-file://` 的协议映射由主进程服务提供；PDF React 运行时及其 effect 拥有 `PluginRegistry` 关联、控制器订阅、`ResizeObserver` 和对象 URL 的生命周期，并在依赖变化或卸载时释放。Zustand 只保存 `ReaderSession` 的状态、位置、目录、搜索、视图偏好和错误。
 
 当前状态须明确区分：PDF 已完成受控适配器事件接线，可将阅读事件回写 Store；Foliate 已完成不导入 `foliate-js` 的端口与控制器**骨架**，用于约束未来的打开、关闭和订阅边界。Foliate 的实际包接入、EPUB 打开与真实渲染仍待技术验证，尚未作为已完成功能宣称。
 

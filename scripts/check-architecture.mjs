@@ -31,11 +31,17 @@ if (violations.length > 0) {
   process.exitCode = 1
 }
 
-/** 判断源码是否静态或动态导入指定包，避免注释中的普通文字触发边界检查。 */
+/** 判断源码是否以静态、动态或 require 形式导入指定包，避免内核边界被导入语法绕过。 */
 function importsPackage(source, packageName) {
   const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const pattern = new RegExp(`(?:from\\s*|import\\s*\\()(['"])${escapedPackageName}(?:/[^'"]*)?\\1`)
-  return pattern.test(source)
+  const packageSpecifier = `(['"])${escapedPackageName}(?:/[^'"]*)?\\1`
+  const patterns = [
+    new RegExp(`\\bimport\\s*${packageSpecifier}`),
+    new RegExp(`\\bfrom\\s*${packageSpecifier}`),
+    new RegExp(`\\bimport\\s*\\(\\s*${packageSpecifier}\\s*\\)`),
+    new RegExp(`\\brequire\\s*\\(\\s*${packageSpecifier}\\s*\\)`)
+  ]
+  return patterns.some((pattern) => pattern.test(source))
 }
 
 /** 递归收集 TypeScript 渲染模块，排除测试文件以检查实际运行依赖。 */

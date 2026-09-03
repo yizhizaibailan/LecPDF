@@ -263,7 +263,7 @@ Run: `corepack pnpm quality:check`
 
 Expected: 测试、类型、架构、注释和生产构建全部通过。
 
-- [x] **Step 5: 提交 `待补充` docs: 完成统一阅读会话架构记录**
+- [x] **Step 5: 提交 `3bf2d01 docs: 完成统一阅读会话架构记录`；本次审查修订另行提交。**
 
 ```bash
 git add scripts/check-architecture.mjs LecPDF-ARCHITECTURE.md LecPDF-总开发清单.md docs/superpowers/plans/2026-09-03-unified-reader-session.md
