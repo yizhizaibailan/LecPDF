@@ -106,7 +106,7 @@ git commit -m "feat: 统一阅读会话事件状态"
 - Produces: `FoliateReaderPort` 与 `FoliateReaderController`。
 - Produces: Foliate 会话的明确架构就绪占位状态，不创建假阅读器。
 
-- [ ] **Step 1: 写失败测试，说明控制器必须委托打开、订阅和关闭**
+- [x] **Step 1: 写失败测试，说明控制器必须委托打开、订阅和关闭**
 
 ```ts
 const events: ReaderEvent[] = []
@@ -121,13 +121,13 @@ expect(port.closed).toBe(true)
 expect(port.unsubscribeCount).toBe(1)
 ```
 
-- [ ] **Step 2: 运行失败测试并确认模块不存在**
+- [x] **Step 2: 运行失败测试并确认模块不存在**
 
 Run: `corepack pnpm test:run -- src/data/readers/foliate/foliate-reader-controller.test.ts`
 
 Expected: FAIL，提示无法解析 `foliate-reader-controller`。
 
-- [ ] **Step 3: 实现不依赖 foliate-js 的端口与控制器**
+- [x] **Step 3: 实现不依赖 foliate-js 的端口与控制器**
 
 ```ts
 export type FoliateReaderPort = {
@@ -141,7 +141,7 @@ export function createFoliateReaderController(port: FoliateReaderPort): FoliateR
 }
 ```
 
-- [ ] **Step 4: 将 `ReaderPage` 的 Foliate 占位改为受控架构状态**
+- [x] **Step 4: 将 `ReaderPage` 的 Foliate 占位改为受控架构状态**
 
 ```tsx
 if (session.kind === 'foliate' && source?.kind === 'foliate') {
@@ -149,13 +149,13 @@ if (session.kind === 'foliate' && source?.kind === 'foliate') {
 }
 ```
 
-- [ ] **Step 5: 运行 Foliate 与阅读页测试并确认通过**
+- [x] **Step 5: 运行 Foliate 与阅读页测试并确认通过**
 
 Run: `corepack pnpm test:run -- src/data/readers/foliate/foliate-reader-controller.test.ts src/pages/reader-reserved/ReaderPage.test.tsx`
 
 Expected: PASS，且测试不导入 foliate-js。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交 `b87709b feat: 建立 Foliate 阅读适配骨架` 与 `ce93a75 docs: 补充 Foliate 控制器资源释放注释`**
 
 ```bash
 git add src/data/readers/foliate src/pages/reader-reserved/ReaderPage.tsx src/pages/reader-reserved/ReaderPage.test.tsx
