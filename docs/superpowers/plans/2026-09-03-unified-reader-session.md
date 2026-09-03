@@ -237,33 +237,33 @@ git commit -m "feat: 回写 PDF 阅读事件至会话状态"
 - Consumes: Task 1 至 3 完成后的目录和公开接口。
 - Produces: 对 Foliate 导入位置和阅读事件流的持续验证记录。
 
-- [ ] **Step 1: 写失败检查用例，声明 Foliate 只能在数据适配层出现**
+- [x] **Step 1: 写失败检查用例，声明 Foliate 只能在数据适配层出现**
 
 ```ts
 const forbidden = [/window\.lec/, /from ['"]electron['"]/, /@embedpdf/, /foliate-js/]
 const allowedEngineRoots = ['src/data/readers/pdf', 'src/data/readers/foliate']
 ```
 
-- [ ] **Step 2: 运行架构检查并确认错误导入会被报告**
+- [x] **Step 2: 运行架构检查并确认错误导入会被报告**
 
 Run: `corepack pnpm architecture:check`
 
 Expected: 在临时违反规则的测试夹具上 FAIL；正常源代码通过。
 
-- [ ] **Step 3: 更新架构文档与总清单**
+- [x] **Step 3: 更新架构文档与总清单**
 
 ```markdown
 - [x] 建立统一阅读会话、ReaderEvent 与 Foliate 适配器骨架。
 - [x] PDF 适配器事件经 readerStore 回写，不直接改变跨组件状态。
 ```
 
-- [ ] **Step 4: 执行完整质量门禁**
+- [x] **Step 4: 执行完整质量门禁**
 
 Run: `corepack pnpm quality:check`
 
 Expected: 测试、类型、架构、注释和生产构建全部通过。
 
-- [ ] **Step 5: 提交并推送**
+- [x] **Step 5: 提交 `待补充` docs: 完成统一阅读会话架构记录**
 
 ```bash
 git add scripts/check-architecture.mjs LecPDF-ARCHITECTURE.md LecPDF-总开发清单.md docs/superpowers/plans/2026-09-03-unified-reader-session.md
