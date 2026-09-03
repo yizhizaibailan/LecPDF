@@ -32,7 +32,7 @@
 - Produces: `ReaderStore.applyEvent(tabId: string, event: ReaderEvent): void`。
 - Consumes: 现有 `ReaderSession`、`DocumentOpenError` 与请求编号保护规则。
 
-- [ ] **Step 1: 写失败测试，说明事件只影响目标标签会话**
+- [x] **Step 1: 写失败测试，说明事件只影响目标标签会话**
 
 ```ts
 store.getState().applyEvent('tab-a', {
@@ -44,13 +44,13 @@ expect(store.getState().sessions['tab-a'].location.page).toBe(9)
 expect(store.getState().sessions['tab-b'].location.page).toBeNull()
 ```
 
-- [ ] **Step 2: 运行失败测试并确认原因是 `applyEvent` 尚未定义**
+- [x] **Step 2: 运行失败测试并确认原因是 `applyEvent` 尚未定义**
 
 Run: `corepack pnpm test:run -- src/stores/reader-store.test.ts`
 
 Expected: FAIL，提示 `applyEvent is not a function` 或 TypeScript 缺少该属性。
 
-- [ ] **Step 3: 在 `src/types/reader.ts` 声明可序列化会话字段与事件**
+- [x] **Step 3: 在 `src/types/reader.ts` 声明可序列化会话字段与事件**
 
 ```ts
 export type ReaderOutlineItem = { id: string; title: string; location: ReaderLocation; children: ReaderOutlineItem[] }
@@ -66,7 +66,7 @@ export type ReaderEvent =
   | { type: 'load-failed'; error: DocumentOpenError }
 ```
 
-- [ ] **Step 4: 在 `reader-store.ts` 实现 `applyEvent` 的不可变归约**
+- [x] **Step 4: 在 `reader-store.ts` 实现 `applyEvent` 的不可变归约**
 
 ```ts
 applyEvent(tabId, event) {
@@ -80,13 +80,13 @@ function applyReaderEvent(state: ReaderStore, tabId: string, event: ReaderEvent)
 }
 ```
 
-- [ ] **Step 5: 运行 Store 测试并确认通过**
+- [x] **Step 5: 运行 Store 测试并确认通过**
 
 Run: `corepack pnpm test:run -- src/stores/reader-store.test.ts`
 
 Expected: PASS，包含未知标签不创建会话与加载失败事件写入错误的覆盖。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交 `3df1d91 feat: 统一阅读会话事件状态`**
 
 ```bash
 git add src/types/reader.ts src/stores/reader-store.ts src/stores/reader-store.test.ts
