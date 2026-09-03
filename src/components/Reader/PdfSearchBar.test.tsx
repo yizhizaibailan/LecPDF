@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { PdfSearchBar } from './PdfSearchBar'
 
 test('搜索栏提供内容搜索、大小写和关闭标签', () => {
-  const html = renderToStaticMarkup(<PdfSearchBar registry={null} onClose={() => undefined} />)
+  const html = renderToStaticMarkup(<PdfSearchBar controller={null} onClose={() => undefined} />)
 
   expect(html).toContain('aria-label="搜索 PDF 内容"')
   expect(html).toContain('aria-label="上一个搜索结果"')

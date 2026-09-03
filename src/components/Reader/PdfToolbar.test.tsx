@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { PdfToolbar } from './PdfToolbar'
 
 test('缺少 registry 时工具按钮禁用', () => {
-  const html = renderToStaticMarkup(<PdfToolbar registry={null} />)
+  const html = renderToStaticMarkup(<PdfToolbar ready={false} pageController={null} />)
 
   expect(html).toContain('disabled=""')
   expect(html).toContain('aria-label="缩小 PDF"')
