@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import type { ReaderEvent } from '../../../types/reader'
 import { createFoliateReaderController } from './foliate-reader-controller'
 
-/** 验证 Foliate 控制器把打开、关闭和事件订阅委托给受控端口。 */
+/** 验证 Foliate 控制器委托打开、关闭和事件订阅，并确保重复取消订阅只释放一次资源。 */
 test('控制器委托 Foliate 生命周期与标准事件订阅', async () => {
   const calls: string[] = []
   let subscribedListener: ((event: ReaderEvent) => void) | undefined
