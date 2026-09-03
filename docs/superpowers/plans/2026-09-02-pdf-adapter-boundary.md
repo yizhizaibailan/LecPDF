@@ -30,7 +30,7 @@
 - [x] 实现最小控制器，唯一导入 `@embedpdf` 的 PluginRegistry 类型并封装 PDF 命令。
 - [x] 运行测试，确认控制器可独立验证。
 - [x] 扩展架构检查：仅允许 `src/data/readers/pdf` 导入 `@embedpdf`。
-- [ ] 提交：`refactor: 建立 PDF 阅读适配器边界`。
+- [x] 提交：`0327172 refactor: 完成 PDF 适配层架构收口`。
 
 ### Task 2: 迁移 PDF 阅读视图
 
@@ -45,7 +45,7 @@
 - [x] 将工具栏、搜索栏和导航侧栏改为无 EmbedPDF 导入的受控视图。
 - [x] 将 PDFViewer 与快捷键监听迁入适配层入口，页面只组合模型。
 - [x] 运行 PDF 回归测试、架构检查、类型检查和构建。
-- [ ] 提交：`refactor: 迁移 PDF 视图至适配器边界`。
+- [x] 提交：`0327172 refactor: 完成 PDF 适配层架构收口`。
 
 ### Task 3: 架构回归与文档收口
 
@@ -54,7 +54,7 @@
 - Modify: `LecPDF-总开发清单.md`
 - Test: `scripts/check-architecture.mjs`
 
-- [ ] 验证组件与页面无 `@embedpdf`、`foliate-js`、Electron 或 `window.lec` 直接依赖。
-- [ ] 更新最终目录职责、资源归属和单向数据流说明。
-- [ ] 运行全量测试、类型检查、构建与架构检查。
-- [ ] 提交：`docs: 完成 PDF 架构边界收口记录`。
+- [x] 验证组件与页面无 `@embedpdf`、`foliate-js`、Electron 或 `window.lec` 直接依赖。
+- [x] 更新最终目录职责、资源归属和单向数据流说明。
+- [x] 运行全量测试、类型检查、构建与架构检查。
+- [x] 提交：`6327c3e refactor: 收口阅读器架构与质量门禁`。
