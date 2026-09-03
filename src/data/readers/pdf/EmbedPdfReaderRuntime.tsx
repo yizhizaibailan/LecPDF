@@ -51,11 +51,14 @@ export function subscribePdfReaderEvents({
 }): (() => void) | undefined {
   if (onReaderEvent === undefined || pageController === null || navigationController === null) return undefined
   onReaderEvent({ type: 'ready' })
+  const publishOutline = (): void => {
+    onReaderEvent({ type: 'outline-changed', outline: toReaderOutline(navigationController.getOutline()) })
+  }
+  const unsubscribeNavigation = navigationController.subscribe(publishOutline)
+  /** 订阅后立即读取快照，避免目录异步加载早于 effect 时丢失首次更新。 */
+  publishOutline()
   const unsubscribePage = pageController.subscribePageState(({ currentPage, totalPages }) => {
     onReaderEvent({ type: 'location-changed', location: { page: currentPage, chapter: null, percent: totalPages === 0 ? 0 : currentPage / totalPages } })
-  })
-  const unsubscribeNavigation = navigationController.subscribe(() => {
-    onReaderEvent({ type: 'outline-changed', outline: toReaderOutline(navigationController.getOutline()) })
   })
   return () => { unsubscribePage(); unsubscribeNavigation() }
 }

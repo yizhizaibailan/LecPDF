@@ -57,17 +57,51 @@ test('PDF 控制器事件回写统一会话并在清理时退订', () => {
   const received: ReaderEvent[] = []
 
   const unsubscribe = subscribePdfReaderEvents({ pageController, navigationController, onReaderEvent: (event) => received.push(event) })
+  pageListener?.({ currentPage: 1, totalPages: 0 })
   pageListener?.({ currentPage: 3, totalPages: 10 })
   navigationListener?.()
   unsubscribe?.()
 
   expect(received).toEqual([
     { type: 'ready' },
+    { type: 'outline-changed', outline: [{ id: 'pdf-outline-0', title: '目录', location: { page: null, chapter: null, percent: 0 }, children: [] }] },
+    { type: 'location-changed', location: { page: 1, chapter: null, percent: 0 } },
     { type: 'location-changed', location: { page: 3, chapter: null, percent: 0.3 } },
     { type: 'outline-changed', outline: [{ id: 'pdf-outline-0', title: '目录', location: { page: null, chapter: null, percent: 0 }, children: [] }] }
   ])
   expect(pageUnsubscribed).toBe(true)
   expect(navigationUnsubscribed).toBe(true)
+})
+
+test('目录订阅不主动通知时仍立即发布已有目录快照', () => {
+  const pageController: PdfReaderController = {
+    getPageState: () => ({ currentPage: 1, totalPages: 1 }),
+    goToPage: () => undefined,
+    previousPage: () => undefined,
+    nextPage: () => undefined,
+    setLayout: () => undefined,
+    zoomOut: () => undefined,
+    zoomToFitPage: () => undefined,
+    zoomIn: () => undefined,
+    rotateBackward: () => undefined,
+    rotateForward: () => undefined,
+    subscribePageState: () => () => undefined
+  }
+  const navigationController: PdfNavigationController = {
+    getOutline: () => [{ title: '已加载目录', pageNumber: 4, children: [] }],
+    getCurrentPage: () => 1,
+    goToPage: () => undefined,
+    subscribe: () => () => undefined
+  }
+  const received: ReaderEvent[] = []
+
+  const unsubscribe = subscribePdfReaderEvents({ pageController, navigationController, onReaderEvent: (event) => received.push(event) })
+  unsubscribe?.()
+
+  expect(received).toEqual([
+    { type: 'ready' },
+    { type: 'outline-changed', outline: [{ id: 'pdf-outline-0', title: '已加载目录', location: { page: 4, chapter: null, percent: 0 }, children: [] }] }
+  ])
 })
 
 test('回调缺失时不创建 PDF 控制器订阅', () => {

@@ -9,6 +9,8 @@ import { expect, test, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { PdfReaderPage } from './PdfReaderPage'
 
+let runtimeOnReaderEvent: unknown
+
 vi.mock('../../data/readers/pdf/EmbedPdfReaderRuntime', () => ({
   EmbedPdfReaderRuntime: ({ children, onReaderEvent }: {
     children(slot: {
@@ -20,14 +22,17 @@ vi.mock('../../data/readers/pdf/EmbedPdfReaderRuntime', () => ({
       renderViewer(overlay: ReactNode): ReactNode
     }): ReactNode
     onReaderEvent?: () => void
-  }) => <div data-reader-event-connected={onReaderEvent === undefined ? 'false' : 'true'}>{children({
+  }) => {
+    runtimeOnReaderEvent = onReaderEvent
+    return <div data-reader-event-connected={onReaderEvent === undefined ? 'false' : 'true'}>{children({
     ready: true,
     pageController: null,
     searchController: null,
     navigationController: null,
     thumbnailContent: null,
     renderViewer: (overlay) => <section aria-label="PDF 阅读视图">{overlay}</section>
-  })}</div>
+    })}</div>
+  }
 }))
 
 test('PDF 页面组合阅读视图、工具栏和侧栏', () => {
@@ -43,6 +48,7 @@ test('PDF 页面只将统一阅读事件回调传给数据层运行时', () => {
   const html = renderToStaticMarkup(<PdfReaderPage url="lec-file://document/token" onReaderEvent={onReaderEvent} />)
 
   expect(html).toContain('data-reader-event-connected="true"')
+  expect(runtimeOnReaderEvent).toBe(onReaderEvent)
 })
 
 test('阅读组件不直接导入 Electron 或数据层', () => {
