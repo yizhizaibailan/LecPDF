@@ -2,7 +2,8 @@
  * 职责：组合窗口布局、标签、开始页和当前阅读会话，并将外部打开入口汇入标签 Store。
  * 异步与资源说明：系统文件请求订阅由 effect 返回其取消函数，避免页面卸载后继续打开文档。
  */
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
+import type { ReaderEvent } from '../types/reader'
 import type { LecApi } from '../../electron/shared/ipc'
 import type { AppRuntime } from '../config/app-runtime'
 import { DocumentTabs } from '../components/TabBar/DocumentTabs'
@@ -43,9 +44,13 @@ export function ApplicationPage({ runtime, lifecycle, dialogs }: ApplicationPage
   const tabStore = runtime.tabStore.getState()
   const activeSession = sessions[activeTabId]
   const activeSource = activeTabId === 'home' ? null : runtime.getSource(activeTabId)
+  /** 将数据层事件限定回写到当前阅读标签；首页没有可更新的阅读会话。 */
+  const onReaderEvent = useCallback((event: ReaderEvent): void => {
+    if (activeTabId !== 'home') runtime.readerStore.getState().applyEvent(activeTabId, event)
+  }, [activeTabId, runtime])
   const content = activeTabId === 'home'
     ? <HomePage onOpenDocuments={() => openDocumentsFromDialog(dialogs.openDocuments, tabStore.openDocument)} />
-    : <ReaderPage session={activeSession} source={activeSource} />
+    : <ReaderPage session={activeSession} source={activeSource} onReaderEvent={onReaderEvent} />
 
   return (
     <AppLayout

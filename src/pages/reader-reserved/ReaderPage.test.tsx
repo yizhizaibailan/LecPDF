@@ -10,6 +10,8 @@ import type { ReaderSession } from '../../types/reader'
 import { PdfReaderPage } from './PdfReaderPage'
 import { ReaderPage } from './ReaderPage'
 
+const noopReaderEvent = (): void => undefined
+
 const readyPdfSession: ReaderSession = {
   tabId: 'tab-1',
   path: 'C:\\Books\\guide.pdf',
@@ -25,15 +27,15 @@ const readyPdfSession: ReaderSession = {
 }
 
 test('ready PDF 会话和 URL 渲染 EmbedPDF 页面', () => {
-  const html = renderToStaticMarkup(<ReaderPage session={readyPdfSession} source={{ kind: 'pdf', url: 'lec-file://token' }} />)
+  const html = renderToStaticMarkup(<ReaderPage session={readyPdfSession} source={{ kind: 'pdf', url: 'lec-file://token' }} onReaderEvent={noopReaderEvent} />)
 
   expect(html).toContain('aria-label="PDF 阅读视图"')
 })
 
 test('相同路径的不同 PDF 标签使用各自 tabId 作为阅读器 key', () => {
   const source = { kind: 'pdf' as const, url: 'lec-file://token' }
-  const first = ReaderPage({ session: readyPdfSession, source })
-  const second = ReaderPage({ session: { ...readyPdfSession, tabId: 'tab-2' }, source })
+  const first = ReaderPage({ session: readyPdfSession, source, onReaderEvent: noopReaderEvent })
+  const second = ReaderPage({ session: { ...readyPdfSession, tabId: 'tab-2' }, source, onReaderEvent: noopReaderEvent })
 
   expect(first.type).toBe(PdfReaderPage)
   expect(first.key).toBe('tab-1')
@@ -41,10 +43,22 @@ test('相同路径的不同 PDF 标签使用各自 tabId 作为阅读器 key', (
   expect(second.key).toBe('tab-2')
 })
 
+test('就绪 PDF 会话将统一阅读事件回调传给 PDF 页面', () => {
+  const onReaderEvent = (): void => undefined
+  const element = ReaderPage({
+    session: readyPdfSession,
+    source: { kind: 'pdf', url: 'lec-file://token' },
+    onReaderEvent
+  })
+
+  expect(element.type).toBe(PdfReaderPage)
+  expect(element.props.onReaderEvent).toBe(onReaderEvent)
+})
+
 test('加载、错误和 Foliate 会话呈现明确状态', () => {
-  const loading = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, status: 'loading' }} source={null} />)
-  const error = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, status: 'error', error: { code: 'document-read-failed', message: '无法读取文档' } }} source={null} />)
-  const foliate = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, kind: 'foliate' }} source={{ kind: 'foliate', bytes: new ArrayBuffer(0) }} />)
+  const loading = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, status: 'loading' }} source={null} onReaderEvent={noopReaderEvent} />)
+  const error = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, status: 'error', error: { code: 'document-read-failed', message: '无法读取文档' } }} source={null} onReaderEvent={noopReaderEvent} />)
+  const foliate = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, kind: 'foliate' }} source={{ kind: 'foliate', bytes: new ArrayBuffer(0) }} onReaderEvent={noopReaderEvent} />)
 
   expect(loading).toContain('正在加载文档')
   expect(error).toContain('无法读取文档')
@@ -53,14 +67,14 @@ test('加载、错误和 Foliate 会话呈现明确状态', () => {
 })
 
 test('Foliate 会话来源缺失时保持资源错误分支', () => {
-  const html = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, kind: 'foliate' }} source={null} />)
+  const html = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, kind: 'foliate' }} source={null} onReaderEvent={noopReaderEvent} />)
 
   expect(html).toContain('阅读资源不可用')
   expect(html).not.toContain('电子书阅读器架构已就绪')
 })
 
 test('Foliate 来源不会进入 PDF 阅读器', () => {
-  const element = ReaderPage({ session: { ...readyPdfSession, kind: 'foliate' }, source: { kind: 'foliate', bytes: new ArrayBuffer(0) } })
+  const element = ReaderPage({ session: { ...readyPdfSession, kind: 'foliate' }, source: { kind: 'foliate', bytes: new ArrayBuffer(0) }, onReaderEvent: noopReaderEvent })
 
   expect(element.type).not.toBe(PdfReaderPage)
 })

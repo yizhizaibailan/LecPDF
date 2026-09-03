@@ -7,14 +7,15 @@ import { PdfNavigationSidebar } from '../../components/Reader/PdfNavigationSideb
 import { PdfSearchBar } from '../../components/Reader/PdfSearchBar'
 import { PdfToolbar } from '../../components/Reader/PdfToolbar'
 import { EmbedPdfReaderRuntime } from '../../data/readers/pdf/EmbedPdfReaderRuntime'
+import type { ReaderEvent } from '../../types/reader'
 
 /** 渲染 PDF 阅读页，并将键盘搜索意图交给本页的局部 UI 状态。 */
-export function PdfReaderPage({ url }: { url: string }): JSX.Element {
+export function PdfReaderPage({ url, onReaderEvent }: { url: string; onReaderEvent(event: ReaderEvent): void }): JSX.Element {
   const [searchOpen, setSearchOpen] = useState(false)
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => { if (event.ctrlKey && event.key.toLowerCase() === 'f') { event.preventDefault(); setSearchOpen(true) } }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
-  return <EmbedPdfReaderRuntime url={url}>{({ ready, pageController, searchController, navigationController, thumbnailContent, renderViewer }) => <main className="reader-shell"><PdfToolbar ready={ready} pageController={pageController} /><div className="reader-workspace"><PdfNavigationSidebar controller={navigationController} thumbnailContent={thumbnailContent} />{renderViewer(searchOpen ? <PdfSearchBar controller={searchController} onClose={() => setSearchOpen(false)} /> : null)}</div></main>}</EmbedPdfReaderRuntime>
+  return <EmbedPdfReaderRuntime url={url} onReaderEvent={onReaderEvent}>{({ ready, pageController, searchController, navigationController, thumbnailContent, renderViewer }) => <main className="reader-shell"><PdfToolbar ready={ready} pageController={pageController} /><div className="reader-workspace"><PdfNavigationSidebar controller={navigationController} thumbnailContent={thumbnailContent} />{renderViewer(searchOpen ? <PdfSearchBar controller={searchController} onClose={() => setSearchOpen(false)} /> : null)}</div></main>}</EmbedPdfReaderRuntime>
 }

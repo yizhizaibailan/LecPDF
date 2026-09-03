@@ -4,16 +4,45 @@
  * 资源说明：通过源码扫描守住组件边界；真实订阅与对象 URL 的释放由组件 effect 覆盖。
  */
 import { readFileSync } from 'node:fs'
-import { expect, test } from 'vitest'
+import type { ReactNode } from 'react'
+import { expect, test, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { PdfReaderPage } from './PdfReaderPage'
 
+vi.mock('../../data/readers/pdf/EmbedPdfReaderRuntime', () => ({
+  EmbedPdfReaderRuntime: ({ children, onReaderEvent }: {
+    children(slot: {
+      ready: boolean
+      pageController: null
+      searchController: null
+      navigationController: null
+      thumbnailContent: ReactNode
+      renderViewer(overlay: ReactNode): ReactNode
+    }): ReactNode
+    onReaderEvent?: () => void
+  }) => <div data-reader-event-connected={onReaderEvent === undefined ? 'false' : 'true'}>{children({
+    ready: true,
+    pageController: null,
+    searchController: null,
+    navigationController: null,
+    thumbnailContent: null,
+    renderViewer: (overlay) => <section aria-label="PDF 阅读视图">{overlay}</section>
+  })}</div>
+}))
+
 test('PDF 页面组合阅读视图、工具栏和侧栏', () => {
-  const html = renderToStaticMarkup(<PdfReaderPage url="lec-file://document/token" />)
+  const html = renderToStaticMarkup(<PdfReaderPage url="lec-file://document/token" onReaderEvent={() => undefined} />)
 
   expect(html).toContain('aria-label="PDF 阅读视图"')
   expect(html).toContain('aria-label="连续阅读"')
   expect(html).toContain('aria-label="打开 PDF 缩略图"')
+})
+
+test('PDF 页面只将统一阅读事件回调传给数据层运行时', () => {
+  const onReaderEvent = (): void => undefined
+  const html = renderToStaticMarkup(<PdfReaderPage url="lec-file://document/token" onReaderEvent={onReaderEvent} />)
+
+  expect(html).toContain('data-reader-event-connected="true"')
 })
 
 test('阅读组件不直接导入 Electron 或数据层', () => {
