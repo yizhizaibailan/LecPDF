@@ -15,7 +15,7 @@ export type ReaderPageProps = {
 
 /**
  * 渲染当前文档的状态页面；仅已就绪 PDF 且来源为 URL 时挂载 EmbedPDF。
- * Foliate 会话目前明确告知尚未接入，避免把 EPUB 字节误交给 PDF 阅读器或伪造阅读内容。
+ * Foliate 会话仅展示架构就绪占位，避免把 EPUB 字节误交给 PDF 阅读器或伪造阅读内容。
  */
 export function ReaderPage({ session, source }: ReaderPageProps): JSX.Element {
   if (session === undefined) return <main className="reader-page reader-page--empty">未选择文档</main>
@@ -23,7 +23,9 @@ export function ReaderPage({ session, source }: ReaderPageProps): JSX.Element {
   if (session.status === 'error') return <main className="reader-page reader-page--error" role="alert">{session.error?.message ?? '无法打开文档'}</main>
 
   if (session.kind === 'pdf' && source?.kind === 'pdf') return <PdfReaderPage key={session.tabId} url={source.url} />
-  if (session.kind === 'foliate') return <main className="reader-page reader-page--foliate">EPUB 阅读器尚未接入</main>
+  if (session.kind === 'foliate' && source?.kind === 'foliate') {
+    return <main className="reader-page reader-page--foliate" aria-live="polite">电子书阅读器架构已就绪，等待 Foliate 内核验证接入</main>
+  }
 
   return <main className="reader-page reader-page--error" role="alert">阅读资源不可用</main>
 }

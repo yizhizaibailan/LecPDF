@@ -48,5 +48,19 @@ test('加载、错误和 Foliate 会话呈现明确状态', () => {
 
   expect(loading).toContain('正在加载文档')
   expect(error).toContain('无法读取文档')
-  expect(foliate).toContain('EPUB 阅读器尚未接入')
+  expect(foliate).toContain('电子书阅读器架构已就绪，等待 Foliate 内核验证接入')
+  expect(foliate).toContain('aria-live="polite"')
+})
+
+test('Foliate 会话来源缺失时保持资源错误分支', () => {
+  const html = renderToStaticMarkup(<ReaderPage session={{ ...readyPdfSession, kind: 'foliate' }} source={null} />)
+
+  expect(html).toContain('阅读资源不可用')
+  expect(html).not.toContain('电子书阅读器架构已就绪')
+})
+
+test('Foliate 来源不会进入 PDF 阅读器', () => {
+  const element = ReaderPage({ session: { ...readyPdfSession, kind: 'foliate' }, source: { kind: 'foliate', bytes: new ArrayBuffer(0) } })
+
+  expect(element.type).not.toBe(PdfReaderPage)
 })
