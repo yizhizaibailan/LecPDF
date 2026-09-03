@@ -176,7 +176,7 @@ git commit -m "feat: 建立 Foliate 阅读适配骨架"
 - Consumes: 现有 `PdfReaderController.subscribePageState`、`PdfNavigationController.subscribe`。
 - Produces: `onReaderEvent(event: ReaderEvent): void` 受控回调，不泄露 EmbedPDF 类型。
 
-- [ ] **Step 1: 写失败测试，说明 PDF 页码事件通过回调离开适配层**
+- [x] **Step 1: 写失败测试，说明 PDF 页码事件通过回调离开适配层**
 
 ```ts
 const events: ReaderEvent[] = []
@@ -185,13 +185,13 @@ renderToStaticMarkup(<PdfReaderPage url="lec-file://document/token" onReaderEven
 expect(readFileSync(new URL('./PdfReaderPage.tsx', import.meta.url), 'utf8')).toContain('onReaderEvent')
 ```
 
-- [ ] **Step 2: 运行失败测试并确认公开属性尚不存在**
+- [x] **Step 2: 运行失败测试并确认公开属性尚不存在**
 
 Run: `corepack pnpm test:run -- src/pages/reader-reserved/PdfReaderPage.test.tsx`
 
 Expected: FAIL，提示 `PdfReaderPage` 不接受 `onReaderEvent`。
 
-- [ ] **Step 3: 在 PDF 运行时订阅控制器并发出标准事件**
+- [x] **Step 3: 在 PDF 运行时订阅控制器并发出标准事件**
 
 ```tsx
 useEffect(() => {
@@ -202,7 +202,7 @@ useEffect(() => {
 }, [onReaderEvent, pageController])
 ```
 
-- [ ] **Step 4: 沿 `ReaderPage` 与 `ApplicationPage` 传递 Store action**
+- [x] **Step 4: 沿 `ReaderPage` 与 `ApplicationPage` 传递 Store action**
 
 ```tsx
 <ReaderPage
@@ -212,13 +212,13 @@ useEffect(() => {
 />
 ```
 
-- [ ] **Step 5: 运行 PDF 页面及 Store 回归测试并确认通过**
+- [x] **Step 5: 运行 PDF 页面及 Store 回归测试并确认通过**
 
 Run: `corepack pnpm test:run -- src/pages/reader-reserved/PdfReaderPage.test.tsx src/pages/reader-reserved/ReaderPage.test.tsx src/stores/reader-store.test.ts`
 
 Expected: PASS，源码检查表明组件不直接导入 EmbedPDF、Foliate、Electron 或 `window.lec`。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交 `2062c57 feat: 回写 PDF 阅读事件至会话状态` 与 `bce25ea fix: 补发 PDF 初始目录快照`**
 
 ```bash
 git add src/data/readers/pdf/EmbedPdfReaderRuntime.tsx src/pages/reader-reserved/PdfReaderPage.tsx src/pages/reader-reserved/ReaderPage.tsx src/pages/ApplicationPage.tsx src/pages/reader-reserved/PdfReaderPage.test.tsx
