@@ -118,3 +118,4 @@ test('关闭会话释放资源和对应状态', async () => {
   expect(registry.close).toHaveBeenCalledWith('tab-1')
   expect(store.getState().sessions['tab-1']).toBeUndefined()
 })
+/** 覆盖阅读会话 Store 的状态迁移与跨标签隔离。 */

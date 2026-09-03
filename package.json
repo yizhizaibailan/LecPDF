@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "typecheck": "tsc --build",
-    "architecture:check": "node scripts/check-architecture.mjs"
+    "architecture:check": "node scripts/check-architecture.mjs",
+    "comments:check": "node scripts/check-comments.mjs",
+    "quality:check": "pnpm test:run && pnpm typecheck && pnpm architecture:check && pnpm comments:check && pnpm build"
   },
   "dependencies": {
     "@ant-design/icons": "5.6.1",

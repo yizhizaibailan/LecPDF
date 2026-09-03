@@ -19,7 +19,7 @@ export type PdfReaderRuntimeSlot = {
   searchController: PdfSearchController | null
   navigationController: PdfNavigationController | null
   thumbnailContent: ReactNode
-  viewer: ReactNode
+  renderViewer(overlay: ReactNode): ReactNode
 }
 
 /** 创建受控 EmbedPDF 运行时，并将所有内核对象限定在数据层。 */
@@ -29,6 +29,7 @@ export function EmbedPdfReaderRuntime({ url, children }: { url: string; children
   const searchController = useMemo(() => registry === null ? null : createPdfSearchController(createEmbedPdfSearchPort(registry)), [registry])
   const navigationController = useMemo(() => registry === null ? null : createPdfNavigationController(createEmbedPdfNavigationPort(registry)), [registry])
   const thumbnailContent = registry === null ? <p className="reader-sidebar__empty">正在准备缩略图…</p> : <EmbedPdfThumbnailPane registry={registry} onJump={(pageNumber) => navigationController?.goToPage(pageNumber)} />
-  const viewer = <section className="reader-viewport" aria-label="PDF 阅读视图"><PDFViewer config={{ src: url, zoom: { defaultZoomLevel: ZoomMode.FitPage, minZoom: 0.1, maxZoom: 4 }, scroll: { defaultStrategy: ScrollStrategy.Vertical, defaultPageGap: 16 }, spread: { defaultSpreadMode: SpreadMode.None }, thumbnails: { width: 120, gap: 8, buffer: 3, labelHeight: 16, autoScroll: true }, search: { showAllResults: true } }} style={{ height: '100%' }} onReady={setRegistry} /></section>
-  return <>{children({ ready: registry !== null, pageController, searchController, navigationController, thumbnailContent, viewer })}</>
+  /** 将局部浮层放入视口，使搜索框的绝对定位始终以阅读区为参照。 */
+  const renderViewer = (overlay: ReactNode): ReactNode => <section className="reader-viewport" aria-label="PDF 阅读视图">{overlay}<PDFViewer config={{ src: url, zoom: { defaultZoomLevel: ZoomMode.FitPage, minZoom: 0.1, maxZoom: 4 }, scroll: { defaultStrategy: ScrollStrategy.Vertical, defaultPageGap: 16 }, spread: { defaultSpreadMode: SpreadMode.None }, thumbnails: { width: 120, gap: 8, buffer: 3, labelHeight: 16, autoScroll: true }, search: { showAllResults: true } }} style={{ height: '100%' }} onReady={setRegistry} /></section>
+  return <>{children({ ready: registry !== null, pageController, searchController, navigationController, thumbnailContent, renderViewer })}</>
 }

@@ -64,3 +64,4 @@ test('skips folders that disappear or cannot be read without losing other result
 
   expect(entries).toMatchObject([{ path: pdfPath, kind: 'pdf', addedAt: 456 }])
 })
+/** 覆盖文档库目录扫描的文件筛选与元数据输出。 */

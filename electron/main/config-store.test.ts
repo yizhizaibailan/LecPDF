@@ -58,3 +58,4 @@ test('does not overwrite configuration created by a newer app version', async ()
   expect(persisted).toBe(false)
   await expect(dataStore.readJson('config.json')).resolves.toEqual(newerConfig)
 })
+/** 覆盖应用配置读写时的默认值与版本保护。 */

@@ -28,3 +28,4 @@ test('rejects an unknown solar icon name instead of rendering a blank placeholde
     '未知 solar 图标：missing-icon'
   )
 })
+/** 覆盖主题配置到 Ant Design token 的稳定映射。 */

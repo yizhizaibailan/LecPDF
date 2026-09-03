@@ -60,3 +60,4 @@ test('leaves the stored source unchanged when a migration step fails', async () 
   await expect(loadMigratedDocument(store, 'library.json', migrator)).rejects.toThrow('迁移失败')
   await expect(readFile(sourcePath, 'utf8')).resolves.toBe(original)
 })
+/** 覆盖持久化 schema 的迁移链与未知版本保护。 */

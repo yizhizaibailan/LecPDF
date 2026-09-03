@@ -82,3 +82,4 @@ test('records tabs in opening order and marks a normal exit as clean', async () 
     startedAt: 789
   })
 })
+/** 覆盖崩溃标记的写入与正常退出状态转换。 */

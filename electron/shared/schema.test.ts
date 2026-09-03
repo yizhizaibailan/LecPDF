@@ -50,3 +50,4 @@ test('uses discriminated annotation shapes for text, note, free text, and ink', 
 
   expect(annotations.map(({ type }) => type)).toEqual(['highlight', 'note', 'freetext', 'ink'])
 })
+/** 覆盖共享数据 schema 的运行时约束，确保主进程与渲染层使用相同数据契约。 */

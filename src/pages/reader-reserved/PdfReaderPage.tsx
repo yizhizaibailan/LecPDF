@@ -16,5 +16,5 @@ export function PdfReaderPage({ url }: { url: string }): JSX.Element {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
-  return <EmbedPdfReaderRuntime url={url}>{({ ready, pageController, searchController, navigationController, thumbnailContent, viewer }) => <main className="reader-shell"><PdfToolbar ready={ready} pageController={pageController} /><div className="reader-workspace"><PdfNavigationSidebar controller={navigationController} thumbnailContent={thumbnailContent} />{viewer}{searchOpen && <PdfSearchBar controller={searchController} onClose={() => setSearchOpen(false)} />}</div></main>}</EmbedPdfReaderRuntime>
+  return <EmbedPdfReaderRuntime url={url}>{({ ready, pageController, searchController, navigationController, thumbnailContent, renderViewer }) => <main className="reader-shell"><PdfToolbar ready={ready} pageController={pageController} /><div className="reader-workspace"><PdfNavigationSidebar controller={navigationController} thumbnailContent={thumbnailContent} />{renderViewer(searchOpen ? <PdfSearchBar controller={searchController} onClose={() => setSearchOpen(false)} /> : null)}</div></main>}</EmbedPdfReaderRuntime>
 }

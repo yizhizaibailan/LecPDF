@@ -34,3 +34,4 @@ test('forwards only string EPUB paths to the restricted buffer reader', async ()
   await expect(readBuffer?.({}, 'C:\\books\\novel.epub')).resolves.toEqual(new Uint8Array([19]).buffer)
   expect(() => readBuffer?.({}, 42)).toThrow('EPUB 路径无效')
 })
+/** 覆盖受限文件读取 IPC 的权限与结果契约。 */

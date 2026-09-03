@@ -1,0 +1,26 @@
+name: 质量门禁
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    name: 测试、类型与构建验证
+    runs-on: ubuntu-latest
+    steps:
+      - name: 获取代码
+        uses: actions/checkout@v4
+      - name: 配置 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: 配置 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+      - name: 执行质量门禁
+        run: pnpm quality:check

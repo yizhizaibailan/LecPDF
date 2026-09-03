@@ -23,3 +23,4 @@ test('registers each window command against its WindowManager action', async () 
 
   expect(calls).toEqual(['minimize', 'toggleMaximize', 'close'])
 })
+/** 覆盖窗口 IPC 白名单与主进程命令分发。 */

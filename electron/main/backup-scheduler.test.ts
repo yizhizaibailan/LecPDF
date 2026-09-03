@@ -36,3 +36,4 @@ test('cancels the prior schedule when automatic backup is disabled or its interv
 
   expect(cleared).toEqual([7, 7])
 })
+/** 覆盖定时备份调度的间隔与生命周期清理。 */

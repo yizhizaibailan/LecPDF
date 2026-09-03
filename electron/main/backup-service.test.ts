@@ -128,3 +128,4 @@ function listZipEntries(path: string): Promise<string[]> {
     })
   })
 }
+/** 覆盖备份、导出和导入时的数据完整性行为。 */

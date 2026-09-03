@@ -29,7 +29,6 @@ export function PdfSearchBar({ controller, onClose }: { controller: PdfSearchCon
     }
     controller?.search(keyword, matchCase)
     setSearching(true)
-    setSearching(true)
   }
   const disabled = controller === null
   const matchLabel = searching ? '搜索中…' : total === 0 ? '无匹配' : `${activeIndex + 1} / ${total}`

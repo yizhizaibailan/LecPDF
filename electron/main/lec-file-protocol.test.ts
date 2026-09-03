@@ -109,3 +109,4 @@ test('registers the lec-file scheme with Electron protocol handling', async () =
 
   expect(response?.status).toBe(404)
 })
+/** 覆盖受限 lec-file 协议对本地 PDF 的访问边界。 */

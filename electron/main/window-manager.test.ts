@@ -75,3 +75,4 @@ test('rejects a command when there is no active window', () => {
 
   expect(() => manager.close()).toThrow('没有可用窗口')
 })
+/** 覆盖窗口管理器对窗口实例和几何状态的协调逻辑。 */

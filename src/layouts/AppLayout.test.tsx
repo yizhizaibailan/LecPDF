@@ -30,3 +30,4 @@ test('注入窗口能力的应用框架渲染标题栏和页面内容', () => {
   expect(html).toContain('aria-label="文档标签"')
   expect(html).toContain('阅读内容')
 })
+/** 覆盖应用布局在标签状态改变时的可见区域组合。 */

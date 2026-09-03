@@ -29,3 +29,4 @@ test('uses restored geometry when it is available', () => {
 
   expect(options).toMatchObject({ x: 40, y: 60, width: 1400, height: 900 })
 })
+/** 覆盖无边框窗口选项的默认值与平台相关约束。 */

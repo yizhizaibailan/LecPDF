@@ -29,3 +29,4 @@ test('creates the configured reader window and loads the renderer URL', async ()
   expect(window.options.webPreferences?.preload).toBe('C:/LecPDF/out/preload/index.cjs')
   expect(window.options.frame).toBe(false)
 })
+/** 覆盖 Electron 窗口创建与生命周期入口的可观察行为。 */

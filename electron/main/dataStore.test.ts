@@ -60,3 +60,4 @@ test('resolves document paths beneath the configured user-data root only', async
   expect(store.resolvePath('data/example.json')).toBe(join(store.rootPath, 'data', 'example.json'))
   expect(() => store.resolvePath('../outside.json')).toThrow('超出用户数据目录')
 })
+/** 覆盖 JSON 数据仓库的原子读写与损坏文件处理。 */

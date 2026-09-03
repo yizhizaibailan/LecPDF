@@ -20,3 +20,4 @@ test('routes valid folder lists to the library service and rejects malformed IPC
   expect(calls).toEqual([['C:\\books', 'D:\\documents']])
   await expect(handlers.get(LIBRARY_IPC_CHANNELS.scanFolders)?.({}, ['C:\\books', 42])).rejects.toThrow('文件夹路径无效')
 })
+/** 覆盖文档库 IPC 的参数校验与服务调用。 */

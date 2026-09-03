@@ -1,6 +1,6 @@
 # LecPDF 架构与数据结构设计
 
-> 版本：v2.1（模块化重构 + 流程图） · 日期：2026-08-27
+> 版本：v2.2（模块化重构 + 单向数据流 + PDF 适配层收口） · 日期：2026-09-03
 > 上游依赖：`LecPDF-FRD.md`（40 项决策）。本文档给出：整体架构图 → 模块划分与职责 → 模块间数据流转 → 接口契约 → 数据模型 → 关键流程。
 
 ---
@@ -14,7 +14,7 @@
 | UI 组件 | Ant Design 5（antd） | FRD 决策 #8 |
 | 状态管理 | Zustand | 已确认（2026-08-27） |
 | PDF 引擎 | embedpdf v2 稳定分支 | 已确认；v3 官方不推荐生产 |
-| EPUB 引擎 | epub.js（经适配层包裹，可替换） | FRD 决策 #5 |
+| EPUB / 非 PDF 电子书引擎 | foliate-js（仅经适配层接入） | 已确认；不得引入 epub.js |
 | i18n | i18next + react-i18next | FRD 决策 #16 |
 | 日志 | electron-log（本地文件） | FRD 决策 #32 零遥测 |
 | 更新 | electron-updater（检查+提示） | FRD 决策 #24 |
@@ -93,7 +93,7 @@
 │  │  Engines 引擎适配层（ReaderEngine 统一接口）                              │  │
 │  │  ┌─────────────────────┐        ┌─────────────────────┐                  │  │
 │  │  │ PDF 适配器           │        │ EPUB 适配器          │                  │  │
-│  │  │ embedpdf v2 + 插件   │        │ epub.js + JSZip     │                  │  │
+│  │  │ EmbedPDF + 插件      │        │ foliate-js          │                  │  │
 │  │  │ (annotations/search/ │        │ (toc/搜索/TTS/设置) │                  │  │
 │  │  │  thumbs/outline)     │        │                     │                  │  │
 │  │  └──────────┬──────────┘        └──────────┬──────────┘                  │  │
@@ -107,6 +107,18 @@
 ```
 
 **核心原则**：主进程只管"系统面"，渲染进程管"产品面"；渲染层唯一接触主进程的通道是 preload 的 `window.lec`（换壳时只重写此层）。所有业务数据在渲染层内存态（stores），持久化统一经 Data 访问层 → IPC → DataStoreSvc 原子写盘。
+
+### 2.1 当前已落地的 PDF 边界（2026-09-03）
+
+`src/data/readers/pdf` 是唯一允许直接导入 `@embedpdf/*` 的目录：它拥有 `PluginRegistry`、`PDFViewer` 配置、页码/目录/搜索端口、缩略图对象 URL 与滚动/尺寸订阅的释放。`PdfReaderPage` 只组合由运行时提供的标准控制器与不透明视图插槽；工具栏、搜索栏和导航侧栏只消费页码、目录、搜索等序列化状态与命令，不能导入 EmbedPDF、foliate-js、Electron 或 `window.lec`。
+
+这里的 `PluginRegistry`、DOM 引用、`ResizeObserver`、对象 URL 和插件回调都是与视图同寿命的临时资源，故不进入 Zustand。Zustand 仍是跨页面、跨标签且需要重渲染的业务状态唯一来源；内核临时资源由适配运行时创建，并在对应 React effect 卸载时释放。
+
+```text
+用户动作 → 受控组件 → 标准控制器 → PDF 适配端口 → EmbedPDF
+EmbedPDF 事件 → PDF 适配端口 → 标准状态 → 受控组件重渲染
+跨标签/可持久化状态 → Zustand Action → Store → UI selector
+```
 
 ---
 
@@ -134,7 +146,7 @@
 | **Pages/StartPage** | 最近/星标/我的文档/聚合视图的展示与交互、文件打开入口（对话框/拖放/重定位） | library store、Features/library、window.lec.dialogs/fs | 不直接读写磁盘 |
 | **Pages/Reader** | 阅读器容器：工具栏、侧栏（缩略图/目录/书签/批注）、状态栏、渲染视口 | Engines、Features、fileData store | 不感知引擎差异 |
 | **Pages/Settings** | 5 组设置表单、快捷键改键与冲突检测、缓存占用展示/清理、导出入口 | settings store、window.lec.backup | 不直接写 config |
-| **Engines（适配层）** | 实现统一 `ReaderEngine` 接口；引擎差异（PDF/EPUB 坐标、锚点、批注格式）全部封死在本层 | embedpdf / epub.js | 不含业务逻辑、不落盘 |
+| **data/readers（适配层）** | 将 PDF/EPUB 引擎差异（坐标、锚点、批注格式）全部封死在适配层；当前 PDF 使用标准控制器，后续 foliate-js 遵循同一事件边界 | EmbedPDF / foliate-js | 不含业务逻辑、不落盘 |
 | **Features/annotations** | 批注增改删编排、统一批注模型转换、undo/redo 栈、锚点失效重定位 | Engines、Data 层、fileData store | 不直接调引擎私有 API |
 | **Features/bookmarks** | 书签增删改、命名排序、跳转定位 | Engines、Data 层 | — |
 | **Features/search** | 文档内搜索编排：防抖输入、命中导航 | Engines | 不做跨文件搜索（非目标） |
@@ -397,10 +409,10 @@
 
 ---
 
-## 5. 引擎适配层（ReaderEngine 统一接口）
+## 5. 引擎适配层（跨格式演进契约）
 
 ```ts
-// engines/types.ts —— 两个引擎都必须实现；业务层只见此接口
+// 未来跨格式能力收敛时的目标契约；当前 PDF 已先以更小的控制器接口落地。
 interface ReaderEngine {
   kind: 'pdf' | 'epub';
   open(source: FileSource): Promise<DocMeta>;      // 加密 PDF 在此回调 password()
@@ -432,7 +444,7 @@ interface ReaderEngine {
 ```
 
 **要点**
-- PDF 适配器收敛全部 embedpdf 插件（annotations/search/thumbnails/outline）；EPUB 适配器同样收敛 epub.js 能力。引擎差异被封死在 `engines/`。
+- PDF 适配器收敛全部 EmbedPDF 插件（搜索、缩略图、目录、页码与视图控制）；后续 EPUB 适配器同样收敛 foliate-js 能力。引擎差异被封死在 `src/data/readers/`。
 - 打开通道：PDF 走 `lec-file://` 流式（200MB 不炸内存）；EPUB 走 `readBuffer` 整包 ArrayBuffer。
 - 加密 PDF：`open()` 检测密码需求 → 回调 UI 弹框 → 会话内缓存（不落盘）。
 
@@ -585,7 +597,7 @@ export.zip
 | 大 PDF 打开 | `lec-file://` 协议流式 + embedpdf 虚拟滚动（原生能力） |
 | 缩略图 | 懒加载：进入视口才渲染，LRU 位图缓存 |
 | 批注渲染 | 引擎原生批注层（不在 DOM 自绘）；风险 3 类先做验证 |
-| 搜索 | 引擎原生（PDFium 文本层 / epub.js 全文），UI 侧防抖输入 |
+| 搜索 | 引擎原生（EmbedPDF 文本层 / foliate-js 全文），UI 侧防抖输入 |
 | 页面提取 | worker 线程做 PDF 页数提取，不阻塞主线程 |
 | 磁盘缓存 | cache/ 2GB LRU，设置页可视化清理 |
 | 内存 | 非活动标签释放渲染位图；标签数超 20 阻止再开；>200MB 走轻量模式 |
@@ -607,7 +619,7 @@ lecpdf/
 ├─ src/                      # 渲染进程（React + antd）
 │  ├─ shell/                 # 标题栏 / 标签页 / 应用菜单 / 窗口三键 / 快捷键
 │  ├─ pages/                 # startPage / reader / settings
-│  ├─ engines/               # types.ts + pdf/ + epub/（适配器）
+│  ├─ data/readers/          # pdf/（EmbedPDF）与 foliate/（foliate-js）适配器
 │  ├─ features/              # annotations / bookmarks / search / tts / library
 │  ├─ data/                  # sidecar 访问层（防抖写/undo/migrate/重定位）
 │  ├─ stores/                # zustand（§7）
@@ -627,7 +639,7 @@ lecpdf/
 | 下划线/删除线/波浪线 | 适配器内探测 embedpdf 能力：支持→原生；不支持→以 highlight 自绘外观降级（rects 相同、type 不同） |
 | PDF 智能反色 | 引擎支持分层→文字层滤镜；不支持→整体 CSS 反色 + 图片二次反色兜底 |
 | EPUB 选区锚定 | CFI 主锚 + quote 文本回找双保险（§6.3） |
-| TTS 句级高亮 | epub.js 适配器内做 DOM 分句映射；不可行则降级为段落级高亮 |
+| TTS 句级高亮 | foliate-js 适配器内做 DOM 分句映射；不可行则降级为段落级高亮 |
 
 ---
 

@@ -8,3 +8,4 @@ test('returns available version information without downloading or installing it
   await expect(service.checkForUpdates()).resolves.toEqual({ available: true, currentVersion: '0.1.0', latestVersion: '0.2.0', releaseNotes: '改进阅读体验', downloadUrl: null })
   expect(checks).toBe(1)
 })
+/** 覆盖手动更新检查服务的结果转换与错误处理。 */

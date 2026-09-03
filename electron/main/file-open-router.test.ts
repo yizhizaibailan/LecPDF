@@ -72,3 +72,4 @@ test('routes second-launch files directly to the active window', () => {
     { channel: LIFECYCLE_IPC_CHANNELS.openFileRequest, path: 'C:\\books\\second.epub' }
   ])
 })
+/** 覆盖系统打开文件请求到渲染层标签的路由。 */

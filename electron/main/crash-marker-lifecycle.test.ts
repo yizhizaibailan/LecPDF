@@ -40,3 +40,4 @@ test('does not persist the clean marker twice when Electron emits before-quit ag
   await vi.waitFor(() => expect(app.exit).toHaveBeenCalledWith(0))
   expect(marker.markCleanExit).toHaveBeenCalledOnce()
 })
+/** 覆盖启动和退出生命周期与崩溃标记服务的连接。 */

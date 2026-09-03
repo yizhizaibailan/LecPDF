@@ -23,3 +23,4 @@ test('forwards a renderer backup request to the main-process backup service', as
 
   await expect(handlers.get(BACKUP_IPC_CHANNELS.runBackup)?.({})).resolves.toEqual(result)
 })
+/** 覆盖备份 IPC 的白名单调用与结果映射。 */

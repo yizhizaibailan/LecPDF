@@ -45,3 +45,4 @@ test('forwards supported paths from a later launch to the primary process', () =
 
   expect(received).toEqual([['C:\\books\\later.pdf']])
 })
+/** 覆盖单实例锁与二次启动文件路由。 */

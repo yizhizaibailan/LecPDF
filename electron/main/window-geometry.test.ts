@@ -76,3 +76,4 @@ test('captures the latest bounds and maximized state when a window closes', asyn
 
   expect(saved).toEqual([{ bounds: { x: 120, y: 80, width: 1280, height: 800 }, maximized: true }])
 })
+/** 覆盖窗口尺寸与位置恢复时的边界修正。 */

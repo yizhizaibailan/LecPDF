@@ -87,3 +87,4 @@ test('清空注册表后，晚到读取结果不能重新写入来源', async ()
 
   expect(registry.getSource('tab-1')).toBeNull()
 })
+/** 覆盖文档会话初始化、错误状态与会话标识的纯转换。 */

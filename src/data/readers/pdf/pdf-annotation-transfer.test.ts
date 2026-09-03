@@ -1,3 +1,4 @@
+/** 覆盖归一化批注坐标到 PDF 页面坐标的旋转转换。 */
 import { expect, test } from 'vitest'
 import type { UnifiedAnnotation } from '../../../../electron/shared/schema'
 import { annotationToPdfTransfer, normalizedToPdfPoint } from './pdf-annotation-transfer'
