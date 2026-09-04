@@ -5,8 +5,9 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const sourceRoot = 'src'
+const sourceRoot = '.'
 const restrictedUiRoots = ['src/components/', 'src/pages/', 'src/stores/']
+const ignoredDirectories = new Set(['.git', 'node_modules', 'out', 'release', 'vendor'])
 const files = await collectFiles(sourceRoot)
 const violations = []
 
@@ -62,13 +63,20 @@ function importsRelativePath(source, pathFragment) {
   return patterns.some((pattern) => pattern.test(source))
 }
 
-/** 递归收集 TypeScript 渲染模块，排除测试文件以检查实际运行依赖。 */
+/** 递归收集仓库内可执行源码，排除依赖、构建产物、子模块和测试代码。 */
 async function collectFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
   const paths = await Promise.all(entries.map(async (entry) => {
     const path = join(directory, entry.name)
-    if (entry.isDirectory()) return collectFiles(path)
-    return /\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.(ts|tsx)$/.test(entry.name) ? [path] : []
+    if (entry.isDirectory()) return ignoredDirectories.has(entry.name) ? [] : collectFiles(path)
+    return isExecutableSourceFile(entry.name) ? [path] : []
   }))
   return paths.flat()
+}
+
+/** 覆盖 Electron、渲染层与 Node 脚本可执行的 JS/TS 模块，声明和测试文件不参与架构校验。 */
+function isExecutableSourceFile(name) {
+  return /\.(js|jsx|mjs|cjs|ts|tsx|mts|cts)$/.test(name)
+    && !/\.(test|spec)\.(js|jsx|mjs|cjs|ts|tsx|mts|cts)$/.test(name)
+    && !/\.d\.(ts|mts|cts)$/.test(name)
 }

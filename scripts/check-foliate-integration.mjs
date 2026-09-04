@@ -15,13 +15,16 @@ const [gitmodules, index] = await Promise.all([
   readRequiredFile('.gitmodules'),
   readRequiredFile('index.html')
 ])
+const foliateSection = gitmodules
+  .split(/(?=^\[submodule )/m)
+  .find((section) => section.startsWith('[submodule "foliate-js"]'))
 const csp = index.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/)?.[1]
 const directives = new Map(csp?.split(';').map((directive) => {
   const [name, ...sources] = directive.trim().split(/\s+/)
   return [name, sources]
 }) ?? [])
 const missing = required.filter((value) => {
-  if (value.startsWith('path =') || value.startsWith('url =')) return !gitmodules.includes(value)
+  if (value.startsWith('path =') || value.startsWith('url =')) return !foliateSection?.includes(value)
   if (!csp) return true
   if (value === "script-src 'self'") return !directives.get('script-src')?.includes("'self'")
   if (value === 'frame-src blob:') return !directives.get('frame-src')?.includes('blob:')
@@ -34,6 +37,14 @@ if (missing.length > 0) {
 
 if (directives.get('script-src')?.join(' ') !== "'self'") {
   throw new Error("生产 CSP 的 script-src 只能允许 'self'，不得放行外部脚本。")
+}
+
+const gitlinkCommit = execFileSync('git', ['rev-parse', 'HEAD:vendor/foliate-js'], {
+  encoding: 'utf8'
+}).trim()
+
+if (gitlinkCommit !== foliateCommit) {
+  throw new Error(`当前提交的 Foliate gitlink 必须固定为 ${foliateCommit}，当前为 ${gitlinkCommit}`)
 }
 
 const currentCommit = execFileSync('git', ['-C', 'vendor/foliate-js', 'rev-parse', 'HEAD'], {
