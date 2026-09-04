@@ -35,7 +35,7 @@
 - Produces: 生产页面的 CSP，允许自身脚本与受控 `blob:` 阅读内容，不允许外部脚本来源。
 - Produces: `pnpm foliate:check`，验证子模块路径、固定提交及 CSP。
 
-- [ ] **Step 1: 写失败检查，声明所需的子模块与 CSP 令牌**
+- [x] **Step 1: 写失败检查，声明所需的子模块与 CSP 令牌**
 
 ```js
 const required = [
@@ -49,13 +49,13 @@ const required = [
 
 将检查写入 `scripts/check-foliate-integration.mjs`，对 `.gitmodules`、子模块 `HEAD` 与 `index.html` 逐项读取并在缺失时抛错。
 
-- [ ] **Step 2: 运行检查，确认它因子模块/CSP 尚不存在而失败**
+- [x] **Step 2: 运行检查，确认它因子模块/CSP 尚不存在而失败**
 
 Run: `node scripts/check-foliate-integration.mjs`
 
 Expected: FAIL，提示 `.gitmodules` 或 CSP 缺失。
 
-- [ ] **Step 3: 添加固定子模块与 CSP，并限制渲染构建的来源**
+- [x] **Step 3: 添加固定子模块与 CSP，并限制渲染构建的来源**
 
 ```bash
 git submodule add --name foliate-js https://github.com/johnfactotum/foliate-js.git vendor/foliate-js
@@ -76,13 +76,13 @@ git -C vendor/foliate-js checkout 78914aef4466eb960965702401634c2cb348e9b1
 
 架构检查须将相对导入 `vendor/foliate-js/` 视作 Foliate 内核导入，并只允许它出现于 `src/data/readers/foliate/`。
 
-- [ ] **Step 4: 运行边界和构建检查，确认通过**
+- [x] **Step 4: 运行边界和构建检查，确认通过**
 
 Run: `corepack pnpm foliate:check && corepack pnpm architecture:check && corepack pnpm build`
 
 Expected: PASS；`git submodule status` 显示 `78914aef4466eb960965702401634c2cb348e9b1`。
 
-- [ ] **Step 5: 提交固定版本与安全边界**
+- [x] **Step 5: 提交固定版本与安全边界**
 
 ```bash
 git add .gitmodules vendor/foliate-js index.html package.json scripts/check-architecture.mjs scripts/check-foliate-integration.mjs
