@@ -234,7 +234,7 @@ git commit -m "feat: 接入 Foliate EPUB 阅读运行时"
 git push
 ```
 
-### Task 4: 将 PDF 的展示状态改为 ReaderSession selector 来源
+### Task 4: 将 PDF 工具栏与目录展示状态改为 ReaderSession selector 来源
 
 **Files:**
 - Modify: `src/types/reader.ts`
@@ -314,7 +314,66 @@ git commit -m "refactor: 收口 PDF 阅读展示状态"
 git push
 ```
 
-### Task 5: 验收真实 EPUB、更新架构记录并执行完整质量门禁
+### Task 5: 将 PDF 搜索展示状态改为 ReaderSession selector 来源
+
+**Files:**
+- Modify: `src/data/readers/pdf/pdf-search-controller.ts`
+- Modify: `src/data/readers/pdf/pdf-search-controller.test.ts`
+- Modify: `src/data/readers/pdf/embedpdf-search-port.ts`
+- Modify: `src/data/readers/pdf/EmbedPdfReaderRuntime.tsx`
+- Modify: `src/data/readers/pdf/EmbedPdfReaderRuntime.test.ts`
+- Modify: `src/components/Reader/PdfSearchBar.tsx`
+- Create: `src/components/Reader/PdfSearchBar.test.tsx`
+- Modify: `src/pages/reader-reserved/PdfReaderPage.tsx`
+
+**Interfaces:**
+- Produces: 含 `query` 的 `PdfSearchState`，可完整转换为 `ReaderSearchState`。
+- Produces: `subscribePdfReaderEvents` 对搜索控制器的订阅及 `search-changed` 事件。
+- Produces: `PdfSearchBar` 的 `search: ReaderSearchState` 展示 props；控制器仅执行搜索、上一项、下一项和停止命令。
+
+- [ ] **Step 1: 写失败测试，说明搜索结果快照来自 ReaderSession**
+
+```tsx
+render(<PdfSearchBar controller={controller} search={{ query: 'LecPDF', total: 3, activeIndex: 1, searching: false }} onClose={onClose} />)
+expect(screen.getByDisplayValue('LecPDF')).toBeInTheDocument()
+expect(screen.getByText('2 / 3')).toBeInTheDocument()
+```
+
+另写适配器测试：搜索控制器发布 `{ query: 'LecPDF', total: 3, activeIndex: 1, searching: false }` 时，运行时发布同值的 `search-changed` 事件。
+
+- [ ] **Step 2: 运行目标测试，确认 search props 与 query 字段尚不存在而失败**
+
+Run: `corepack pnpm test:run -- src/data/readers/pdf/pdf-search-controller.test.ts src/data/readers/pdf/EmbedPdfReaderRuntime.test.ts src/components/Reader/PdfSearchBar.test.tsx`
+
+Expected: FAIL，提示 `PdfSearchState.query` 或 `PdfSearchBar.search` 不存在。
+
+- [ ] **Step 3: 让搜索端口保存查询词，运行时回写 ReaderEvent，组件只读会话快照**
+
+```ts
+export type PdfSearchState = { query: string; total: number; activeIndex: number; searching: boolean }
+
+const unsubscribeSearch = searchController.subscribe((state) => {
+  onReaderEvent({ type: 'search-changed', search: state })
+})
+```
+
+`PdfSearchBar` 保留输入中的未提交草稿和大小写开关这两项局部交互状态；计数、活动索引和已执行查询词从 `search` prop 显示。调用 `controller.search`、`previous`、`next` 和 `stop` 后，等待 Store 回写新快照，而不手工写入结果计数。
+
+- [ ] **Step 4: 运行搜索、页面与 Store 回归测试，确认通过**
+
+Run: `corepack pnpm test:run -- src/data/readers/pdf/pdf-search-controller.test.ts src/data/readers/pdf/EmbedPdfReaderRuntime.test.ts src/components/Reader/PdfSearchBar.test.tsx src/pages/reader-reserved/PdfReaderPage.test.tsx src/stores/reader-store.test.ts`
+
+Expected: PASS；关闭搜索栏后控制器订阅已释放，旧搜索事件不会改写已关闭标签。
+
+- [ ] **Step 5: 提交 PDF 搜索 selector 状态收口**
+
+```bash
+git add src/data/readers/pdf/pdf-search-controller.ts src/data/readers/pdf/pdf-search-controller.test.ts src/data/readers/pdf/embedpdf-search-port.ts src/data/readers/pdf/EmbedPdfReaderRuntime.tsx src/data/readers/pdf/EmbedPdfReaderRuntime.test.ts src/components/Reader/PdfSearchBar.tsx src/components/Reader/PdfSearchBar.test.tsx src/pages/reader-reserved/PdfReaderPage.tsx
+git commit -m "refactor: 收口 PDF 搜索展示状态"
+git push
+```
+
+### Task 6: 验收真实 EPUB、更新架构记录并执行完整质量门禁
 
 **Files:**
 - Modify: `LecPDF-ARCHITECTURE.md`
