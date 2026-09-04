@@ -10,7 +10,7 @@ import type { FoliateReaderPort } from './foliate-reader-controller'
 export type FoliateTocItem = {
   label: string
   href: string
-  subitems: FoliateTocItem[]
+  subitems?: FoliateTocItem[] | null
 }
 
 /** 表示 Foliate relocate 事件中提供的章节索引与阅读进度。 */
@@ -23,7 +23,7 @@ export type FoliateRelocate = {
 export type FoliateViewElement = EventTarget & {
   open(source: Blob): Promise<void>
   close(): void
-  book?: { toc: FoliateTocItem[] }
+  book?: { toc?: FoliateTocItem[] }
 }
 
 /** Foliate 视图端口将阅读器专用事件限制在数据层，并实现统一的 ReaderEvent 契约。 */
@@ -37,7 +37,7 @@ function toReaderOutline(items: FoliateTocItem[], path: number[] = []): ReaderOu
       id: `foliate-outline-${itemPath.join('.')}`,
       title: item.label,
       location: { page: null, chapter: item.href, percent: 0 },
-      children: toReaderOutline(item.subitems, itemPath)
+      children: toReaderOutline(item.subitems ?? [], itemPath)
     }
   })
 }

@@ -71,6 +71,32 @@ test('打开 EPUB 后发布递归目录和就绪事件', async () => {
   ])
 })
 
+test('目录子项为 null 或缺失时仍发布空子目录和就绪事件', async () => {
+  const view = new TestFoliateView()
+  view.book = {
+    toc: [
+      { label: '空目录', href: '#empty', subitems: null },
+      { label: '缺省目录', href: '#missing' }
+    ]
+  } as never
+  const port = createFoliateViewPort(view)
+  const received: ReaderEvent[] = []
+  port.subscribe((event) => received.push(event))
+
+  await port.open(new ArrayBuffer(0))
+
+  expect(received).toEqual([
+    {
+      type: 'outline-changed',
+      outline: [
+        { id: 'foliate-outline-0', title: '空目录', location: { page: null, chapter: '#empty', percent: 0 }, children: [] },
+        { id: 'foliate-outline-1', title: '缺省目录', location: { page: null, chapter: '#missing', percent: 0 }, children: [] }
+      ]
+    },
+    { type: 'ready' }
+  ])
+})
+
 test('relocate 转换章节、百分比并将范围限制在零到一', () => {
   const view = new TestFoliateView()
   const port = createFoliateViewPort(view)
