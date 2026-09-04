@@ -103,7 +103,7 @@ git push
 - Produces: `createFoliateViewPort(view)`，其中 `view` 有 `open(source: Blob)`、`close()`、`book?.toc` 及事件目标能力。
 - Produces: `relocate` → `location-changed`、书籍 `toc` → `outline-changed`、成功 → `ready`、失败 → `load-failed`。
 
-- [ ] **Step 1: 写失败测试，锁定事件映射、错误脱敏和关闭后的停止回调**
+- [x] **Step 1: 写失败测试，锁定事件映射、错误脱敏和关闭后的停止回调**
 
 ```ts
 const events: ReaderEvent[] = []
@@ -121,13 +121,13 @@ unsubscribe()
 
 另写断言：`book.toc` 的 `label`、`href` 与 `subitems` 被递归转换为 `ReaderOutlineItem`，且 `load-failed.error.message` 不含传入异常文本。
 
-- [ ] **Step 2: 运行测试，确认模块尚不存在而失败**
+- [x] **Step 2: 运行测试，确认模块尚不存在而失败**
 
 Run: `corepack pnpm test:run -- src/data/readers/foliate/foliate-view-port.test.ts`
 
 Expected: FAIL，提示无法解析 `foliate-view-port`。
 
-- [ ] **Step 3: 实现最小事件端口与幂等资源释放**
+- [x] **Step 3: 实现最小事件端口与幂等资源释放**
 
 ```ts
 export type FoliateViewElement = EventTarget & {
@@ -152,13 +152,13 @@ export function createFoliateViewPort(view: FoliateViewElement): FoliateReaderPo
 
 `toLoadFailure` 必须返回固定的中文消息“无法打开电子书”，只保留标准错误码。
 
-- [ ] **Step 4: 运行 Foliate 端口与控制器测试，确认通过**
+- [x] **Step 4: 运行 Foliate 端口与控制器测试，确认通过**
 
 Run: `corepack pnpm test:run -- src/data/readers/foliate/foliate-view-port.test.ts src/data/readers/foliate/foliate-reader-controller.test.ts`
 
 Expected: PASS；重复 `close()` 和重复取消订阅均不重复释放。
 
-- [ ] **Step 5: 提交 Foliate 事件端口**
+- [x] **Step 5: 提交 Foliate 事件端口**
 
 ```bash
 git add src/data/readers/foliate/foliate-view-port.ts src/data/readers/foliate/foliate-view-port.test.ts src/data/readers/foliate/foliate-reader-controller.ts src/data/readers/foliate/foliate-reader-controller.test.ts
